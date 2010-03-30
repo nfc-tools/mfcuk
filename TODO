@@ -1,0 +1,19 @@
+TODO
+====
+
+PACKAGE
+-------
+MiFare Classic Universal toolKit (MFCUK)
+
+TOOL(S)
+-------
+Mifare Classic DarkSide Key Recovery Tool (mfcuk_keyrecovery_darkside.c) (previously known as zv_mf_dark_side)
+...
+
+ITEMS
+=====
+0. Integrate with MFOC into MFCUK
+1. Improve the performance (though not bad)
+2. Optimize bits operations
+3. Remove dead-code/commented block after testing
+4. Proper error handling in some cases (not critical errors, but nice to have checks in place)
