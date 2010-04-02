@@ -8,9 +8,11 @@ Summarizes known/publicly implemented Mifare Classic cards - default keys, data 
 
 = Details =
 
-|| *Country* || *City* || *Card Name* || *Card type* || *Default keys* || *Reused keys patterns* || *Data format* || *Known plain-text* || *Contributor* ||
-|| Romania || Bucharest || RATB SAT Card Activ || 1K || None || Sector_0_A=Sector_1_A <br> Sector_0_B=Sector_1_B || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 1, 2, 32, 33, 34, 36, 37, 38|| . ||
-|| U.K. || London || Oyster || 1K || ? || ? || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 2, 17, 56, 57, 58, 60, 61, 62<br> "–ABCDEFGHIJKLM" string at block 1  || . ||
+|| *Country* || *City* || *Card Name* || *URL* || *Card type* || *Default keys* || *Reused keys patterns* || *Data format* || *Known plain-text* || *Contributor* ||
+|| Romania || Bucharest || RATB SAT Card Activ || http://card.ratb.ro/ || 1K || None || Sector_0_A=Sector_1_A <br> Sector_0_B=Sector_1_B || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 1, 2, 32, 33, 34, 36, 37, 38 || . ||
+|| Romania || Timisoara || RATT Card || http://www.ratt.ro/taxare/ || ?K || ? || ? || ? || ? || . ||
+|| Bulgaria|| Sofia || SKGT || http://www.skgt-bg.com/index_en.htm || ?K || ? || ? || ? || ? || . ||
+|| U.K. || London || Oyster card || https://oyster.tfl.gov.uk/oyster/entry.do || 1K || None || None || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 2, 17, 56, 57, 58, 60, 61, 62<br> "–ABCDEFGHIJKLM" string at block 1  || . ||
 
 
 = Legal disclaimer =
