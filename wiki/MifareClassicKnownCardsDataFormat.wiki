@@ -15,6 +15,15 @@ Summarizes known/publicly implemented Mifare Classic cards - default keys, data 
 || U.K. || London || Oyster card || https://oyster.tfl.gov.uk/oyster/entry.do || 1K || None || None || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 2, 17, 56, 57, 58, 60, 61, 62<br> "–ABCDEFGHIJKLM" string at block 1  || . ||
 
 
+= Contributions =
+
+If you legally own a publicly available Mifare Classic card, which *is not* listed here or which you think *is more accurate/updated* than presented one, we would like to hear from you.
+
+Please DO NOT contribute:
+ * private card dumps (examples: office building, fitness centers, etc.)
+ * card dumps which do legally belong to you (examples: a test dump made by a friend on your computer, dump you made from your friend's card, etc.)
+
+
 = Legal disclaimer =
 
 This information is presented in good faith and for informational purposes only. It is not intended to disclose private/sensitive information nor to affect in any other ways holders or issuers of such publicly available cards. The information is gathered from personally and legally owned cards.
