@@ -1,0 +1,12 @@
+#summary Summarizes known/publicly implemented Mifare Classic cards - default keys, data storage format, known-plaintexts on card, etc.
+#labels Mifare,Classic,Data
+
+= Introduction =
+
+Add your content here.
+
+
+= Details =
+
+|| *Country* || *City* || *Card Name* || *Card type* || *Default keys* || *Data format* || *Known plain-text* || *Contributor* ||
+|| Romania || Bucharest || RATB SAT Card Activ || 1K || None || *Unknown* (encoded/mangled/in-house crypto?; encrypted?; block/stream cipher?) || FF sequences in blocks: 1, 2, 20, 21, 22, 24, 25, 26|| A. ||
