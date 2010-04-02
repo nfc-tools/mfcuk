@@ -13,7 +13,8 @@ Summarizes known/publicly implemented Mifare Classic cards - default keys, data 
 || Romania || Timisoara || RATT Card || http://www.ratt.ro/taxare/ || ?K || ? || ? || ? || ? || . ||
 || Bulgaria|| Sofia || SKGT || http://www.skgt-bg.com/index_en.htm || 4K || FFZZZZZZZZZZ<br> A0ZZZZZZZZZZ || Default keys heavily reused<br> Sector_5_A=Sector_6_A || ? || Hex password for last sector key B represents string "SofiaM" || . ||
 || U.K. || London || Oyster card || https://oyster.tfl.gov.uk/oyster/entry.do || 1K || None || None || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 2, 17, 56, 57, 58, 60, 61, 62<br> "–ABCDEFGHIJKLM" string at block 1  || . ||
-
+|| Netherlands || Amsterdam || OV Chipkaart || http://www.ov-chipkaart.nl/ || ? || ? || ? || ? || ? || . ||
+|| Taiwan || Taipei|| EasyCard || http://www.trtc.com.tw/ || 1K || ? || ? || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || ? || . ||
 
 = Contributions =
 
