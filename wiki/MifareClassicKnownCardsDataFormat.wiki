@@ -21,7 +21,7 @@ If you legally own a publicly available Mifare Classic card, which *is not* list
 
 Please DO NOT contribute:
  * private card dumps (examples: office building, fitness centers, etc.)
- * card dumps which do legally belong to you (examples: a test dump made by a friend on your computer, dump you made from your friend's card, etc.)
+ * card dumps which do not legally belong to you (examples: a test dump made by a friend on your computer, dump you made from your friend's card, etc.)
 
 
 = Legal disclaimer =
