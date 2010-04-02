@@ -8,7 +8,7 @@ Summarizes known/publicly implemented Mifare Classic cards - default keys, data 
 
 = Details =
 
-|| *Country* || *City* || *Card Name* || *URL* || *Card type* || *Default keys* || *Reused keys patterns* || *Data format* || *Known plain-text* || *Contributor* ||
+|| *Country* || *City* || *Card Name* || *URL* || *Card type* || *Default keys* || *Reused keys patterns* || *Data format* || *Known plain-text* ||
 || Romania || Bucharest || RATB SAT Card Activ || http://card.ratb.ro/ || 1K || None || Sector_0_A=Sector_1_A <br> Sector_0_B=Sector_1_B || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 1, 2, 32, 33, 34, 36, 37, 38 || . ||
 || Romania || Timisoara || RATT Card || http://www.ratt.ro/taxare/ || ?K || ? || ? || ? || ? || . ||
 || Bulgaria|| Sofia || SKGT || http://www.skgt-bg.com/index_en.htm || 4K || FFZZZZZZZZZZ<br> A0ZZZZZZZZZZ || Default keys heavily reused<br> Sector_5_A=Sector_6_A || ? || Hex password for last sector key B represents string "SofiaM" || . ||
