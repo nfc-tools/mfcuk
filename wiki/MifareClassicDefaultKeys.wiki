@@ -8,7 +8,7 @@ List of default keys presented as *examples* in NXP Application Notes, but which
 
 = Details =
 
-The list below details the publicly know and available default keys (specified in various application notes as examples):
+The list below details the publicly known and available default keys (specified in various application notes as examples):
 
  * {0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
  * {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5}
