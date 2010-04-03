@@ -1,5 +1,5 @@
 #summary List of default keys presented as *examples* in NXP Application Notes, but which were used ad-litteram by vendors/system-integrators.
-#labels Featured
+#labels Featured,Mifare,Classic,Default,Keys,Systems
 
 = Introduction =
 
@@ -10,13 +10,14 @@ List of default keys presented as *examples* in NXP Application Notes, but which
 
 The list below details the publicly known and available default keys (specified in various application notes as examples):
 
- * {0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
- * {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5}
- * {0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5}
- * {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
- * {0x4d, 0x3a, 0x99, 0xc3, 0x51, 0xdd}
- * {0x1a, 0x98, 0x2c, 0x7e, 0x45, 0x9a}
- * {0xd3, 0xf7, 0xd3, 0xf7, 0xd3, 0xf7}
- * {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}
+|| *Default key* || *No. of systems using it* || *List of systems using it* || *Approx. no. of cards using it* || *Approx. % of cards from total Mifare Classic cards* ||
+|| ffffffffffff || ? || ? || ? || ? ||
+|| a0a1a2a3a4a5 || ? || ? || ? || ? ||
+|| b0b1b2b3b4b5 || ? || ? || ? || ? ||
+|| 000000000000 || ? || ? || ? || ? ||
+|| 4d3a99c351dd || ? || ? || ? || ? ||
+|| 1a982c7e459a || ? || ? || ? || ? ||
+|| d3f7d3f7d3f7 || ? || ? || ? || ? ||
+|| aabbccddeeff || ? || ? || ? || ? ||
 
 As in the case of GSM COMP128, the example details from specifications/appnotes were taken ad-litteram, posing a security threat on the system.
