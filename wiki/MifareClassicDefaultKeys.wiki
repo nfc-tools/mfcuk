@@ -10,9 +10,9 @@ List of default keys presented as *examples* in NXP Application Notes, but which
 
 The list below details the publicly known and available default keys (specified in various application notes as examples):
 
-|| *Default key* || *No. of systems using it* || *List of systems using it* || *Approx. no. of cards using it* || *Approx. % of cards from total Mifare Classic cards* ||
-|| ffffffffffff || ? || ? || ? || ? ||
-|| a0a1a2a3a4a5 || ? || ? || ? || ? ||
+|| *Default key* || *No. of known systems using it* || *List of those systems* || *Approx. no. of cards using it* || *Approx. % of cards from total Mifare Classic cards* ||
+|| ffffffffffff || 1 || SKGT<br> || ? || ? ||
+|| a0a1a2a3a4a5 || 1 || SKGT<br> || ? || ? ||
 || b0b1b2b3b4b5 || ? || ? || ? || ? ||
 || 000000000000 || ? || ? || ? || ? ||
 || 4d3a99c351dd || ? || ? || ? || ? ||
