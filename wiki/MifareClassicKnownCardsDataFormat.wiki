@@ -29,3 +29,7 @@ This information is presented in good faith and for informational purposes only.
 || U.K. || <a href="http://maps.google.com/?q=London" target="_blank">London</a> || Oyster card || https://oyster.tfl.gov.uk/oyster/entry.do<br> <img src='http://mfcuk.googlecode.com/files/UK_London_Oyster_frontX.jpg'><br> <img src='http://mfcuk.googlecode.com/files/UK_London_Oyster_backX.jpg'> || 1K || None || None || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || 0xFF sequences in blocks: 2, 17, 56, 57, 58, 60, 61, 62<br> "–ABCDEFGHIJKLM" string at block 1  || . ||
 || Netherlands || <a href="http://maps.google.com/?q=Amsterdam" target="_blank">Amsterdam</a> || OV Chipkaart || http://www.ov-chipkaart.nl/<br> <img src='http://mfcuk.googlecode.com/files/Netherlands_Amsterdam_OV_Chipkaart_front0.jpg'> || ? || ? || ? || ? || ? || . ||
 || Taiwan || <a href="http://maps.google.com/?q=Taipei" target="_blank">Taipei</a> || EasyCard || http://www.trtc.com.tw/<br> <img src='http://mfcuk.googlecode.com/files/Taiwan_Taipei_EasyCard_frontX.jpg'> || 1K || ? || ? || *Unknown*<br> encoded/mangled/in-house crypto?<br> encrypted?<br> block/stream cipher? || ? || . ||
+
+
+= Links =
+http://www.skyscrapercity.com/showthread.php?p=39116178
