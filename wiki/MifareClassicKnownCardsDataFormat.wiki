@@ -17,7 +17,7 @@ Please DO NOT contribute:
 
 = Legal disclaimer =
 
-This information is presented in good faith and for informational purposes only. It is not intended to disclose private/sensitive information nor to affect in any other ways holders or issuers of such publicly available cards. The information is gathered from personally and legally owned cards.
+This information is presented in good faith and for informational purposes only. It is not intended to disclose private/sensitive information nor to affect in any other ways holders or issuers of such publicly available cards. The information is gathered from personally and legally owned cards. The information presented here is intended to raise awareness to the possible security threats and privacy implications when using Mifare Classic cards.
 
 
 = Details =
