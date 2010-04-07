@@ -1,0 +1,19 @@
+#summary Summarizes a list of known/available information regarding mobile phones/devices that have Mifare Classic Reader/Tag elements
+
+= Introduction =
+
+Summarizes a list of known/available information regarding mobile phones/devices that have Mifare Classic Reader/Tag elements
+
+
+= Details =
+
+|| *Name/Model* || *URLs/Photo* || *Reader/Tag* || *RFID/NFC Chipset* ||
+|| <a href='http://europe.nokia.com/find-products/devices/nokia-6131-nfc/technical-specifications'>Nokia 6131</a> || ? || Reader+Tag || ? ||
+|| <a href='http://europe.nokia.com/find-products/devices/nokia-6212-classic/specifications'>Nokia 6212</a> || ? || Reader+Tag || ? ||
+|| <a href='http://www.mobilemag.com/2004/03/16/nokia-5140-rfid-reader/'>Nokia 5140</a> || ? || ? (14443A) || ? ||
+|| Samsung SGH X700 NFC || ? || ? || ? ||
+|| Benq T80 || ? || ? || ? ||
+
+
+= Links =
+http://en.wikipedia.org/wiki/Near_Field_Communication#NFC-enabled_handsets
