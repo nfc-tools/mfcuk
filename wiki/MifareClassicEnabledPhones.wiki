@@ -13,6 +13,9 @@ Summarizes a list of known/available information regarding mobile phones/devices
 || <a href='http://www.mobilemag.com/2004/03/16/nokia-5140-rfid-reader/'>Nokia 5140</a> || ? || ? (14443A) || ? ||
 || Samsung SGH X700 NFC || ? || ? || ? ||
 || Benq T80 || ? || ? || ? ||
+|| <a href='http://www.adactiv.es/PDFs/NFC/NFC%20GSM%20PDA.pdf'>Telefunken CS A108</a> || ? || ? || ? ||
+|| <a href='http://www.austromontan.com/images/NFC_Phone_Datasheet_E.pdf'>Austro Montan</a> || ? || ? || ? ||
+|| Foxway Limited 5003 || ? || ? || ? ||
 
 
 = Links =
