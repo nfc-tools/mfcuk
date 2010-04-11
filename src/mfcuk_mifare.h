@@ -67,11 +67,16 @@
 #define MIFARE_CLASSIC_1K                       0x08    // MF1ICS50 Functional Specifications - 0x08
 #define MIFARE_CLASSIC_4K                       0x18    // MF1ICS70 Functional Specifications - 0x18
 #define MIFARE_DESFIRE                          0x20    // XXXXXXXX Functional Specifications - 0x20
-#define MIFARE_CLASSIC_1K_RATB                  0x88    // Infineon Licensed Mifare - 0x88 (thanks JPS)
+#define MIFARE_CLASSIC_1K_RATB                  0x88    // Infineon Licensed Mifare 1K = 0x88 (thanks JPS)
+#define MIFARE_CLASSIC_4K_SKGT                  0x98    // Infineon Licensed Mifare 4K = 0x98???
 
 #define IS_MIFARE_CLASSIC_1K(ats_sak)           ( ((ats_sak) == MIFARE_CLASSIC_1K) || ((ats_sak) == MIFARE_CLASSIC_1K_RATB) )
-#define IS_MIFARE_CLASSIC_4K(ats_sak)           ( ((ats_sak) == MIFARE_CLASSIC_4K) )
+#define IS_MIFARE_CLASSIC_4K(ats_sak)           ( ((ats_sak) == MIFARE_CLASSIC_4K) || ((ats_sak) == MIFARE_CLASSIC_4K_SKGT) )
 #define IS_MIFARE_DESFIRE(ats_sak)              ( ((ats_sak) == MIFARE_DESFIRE) )
+
+#define IS_MIFARE_CLASSIC_1K_TAG(tag)           IS_MIFARE_CLASSIC_1K(tag->amb[0].mbm.btUnknown)
+#define IS_MIFARE_CLASSIC_4K_TAG(tag)           IS_MIFARE_CLASSIC_4K(tag->amb[0].mbm.btUnknown)
+#define IS_MIFARE_DESFIRE_TAG(tag)              IS_MIFARE_DESFIRE(tag->amb[0].mbm.btUnknown)
 
 #define MIFARE_CLASSIC_BYTES_PER_BLOCK          16 // Common for Mifare Classic 1K and Mifare Classic 4K
 #define MIFARE_CLASSIC_INVALID_BLOCK            0xFFFFFFFF

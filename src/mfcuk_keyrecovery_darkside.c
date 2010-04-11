@@ -1,4 +1,21 @@
 /*
+ LICENSE
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 2 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+*/
+
+/*
  Package:
     MiFare Classic Universal toolKit (MFCUK)
  
@@ -99,26 +116,10 @@
 --------------------------------------------------------------------------------
 */
 
-/*
- LICENSE
-
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 2 of the License, or
- (at your option) any later version.
- 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>. 
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #ifdef WIN32
     #define NOMINMAX
@@ -139,9 +140,13 @@
 #include <nfc/mifaretag.h>
 #include "mfcuk_mifare.h"
 #include "mfcuk_utils.h"
+#include "mfcuk_finger.h"
 #include "mfcuk_keyrecovery_darkside.h"
 
 #define MAX_FRAME_LEN       264
+
+extern mfcuk_finger_tmpl_entry mfcuk_finger_db[];
+extern int mfcuk_finger_db_entries;
 
 // TODO: rename the array and number of items in array variable names
 tag_nonce_entry_t arrSpoofEntries[MAX_TAG_NONCES]; // "Cache" array of already received tag nonces, since we cannot 100% fix one tag nonce as of now
@@ -666,6 +671,7 @@ void print_usage(FILE *fp)
 {
     fprintf(fp, "\n");
     fprintf(fp, "Usage:\n");
+    fprintf(fp, "-C - require explicit connection to the reader. Without this option, the connection is not made and recovery will not occur\n");
     fprintf(fp, "-i mifare.dmp - load input mifare_tag type dump\n");
     fprintf(fp, "-I mifare_ext.dmp - load input extended dump specific to this tool, has several more fields on top of mifare_tag type dump\n");
     fprintf(fp, "-o mifare.dmp - output the resulting mifare_tag dump to a given file\n");
@@ -677,10 +683,15 @@ void print_usage(FILE *fp)
     fprintf(fp, "\tAfter first semicolon key-type can specified: A recovers only keyA, B recovers only keyB, anything else recovers both keys\n");
     fprintf(fp, "-U UID - force specific UID. If a dump was loaded with -i, -U will overwrite the in the memory where dump was loaded\n");
     fprintf(fp, "-M tagtype - force specific tagtype. 8 is 1K, 24 is 4K, 32 is DESFire\n");
-    fprintf(fp, "-D - for sectors and key-types markes for verification, use first default keys to verify (maybe you are lucky)\n");
+    fprintf(fp, "-D - for sectors and key-types marked for verification, in first place use default keys to verify (maybe you are lucky)\n");
     fprintf(fp, "-d key - specifies additional full 12 hex-digits default key to be checked. Multiple -d options can be used for more additional keys\n");
     fprintf(fp, "-s - miliseconds to sleep for DROP FIELD\n");
     fprintf(fp, "-S - miliseconds to sleep for CONSTANT DELAY\n");
+    fprintf(fp, "-P hex_literals_separated - try to recover the key from a conversation sniffed with Proxmark3 (mifarecrack.c based). Accepts several options:\n");
+    fprintf(fp, "\tConcatenated string in hex literal format of form uid:tag_chal:nr_enc:reader_resp:tag_resp\n");
+    fprintf(fp, "\tExample -P 0x5c72325e:0x50829cd6:0xb8671f76:0xe00eefc9:0x4888964f would find key FFFFFFFFFFFF\n");
+    fprintf(fp, "-p proxmark3_full.log - tries to parse the log file on it's own (mifarecrack.py based), get the values for option -P and invoke it\n");
+    fprintf(fp, "-F - tries to fingerprint the input dump (-i) against known cards' data format\n");
     fprintf(fp, "\n");
     return;
 }
@@ -884,6 +895,26 @@ int main(int argc, char* argv[])
     mifare_tag_ext tag_on_reader;
     mifare_tag_ext tag_recover_verify;
     mifare_key_type bKeyType = keyA;
+    
+    // fingerprint options related
+    mifare_tag finger_tag;
+    float finger_score;
+    float finger_score_highest;
+    int finger_index_highest;
+    
+    // proxmark3 log related
+    #define PM3_UID         0
+    #define PM3_TAG_CHAL    1
+    #define PM3_NR_ENC      2
+    #define PM3_READER_RESP 3
+    #define PM3_TAG_RESP    4
+    
+    uint32_t pm3_full_set_log[5]; // order is: uid, tag_challenge, nr_enc, reader_response, tag_response
+    uint32_t pm3_ks2;
+    uint32_t pm3_ks3;
+    struct Crypto1State *pm3_revstate;
+    uint64_t pm3_lfsr;
+    unsigned char* pm3_plfsr = (unsigned char*)&pm3_lfsr;
 
     // various related
     int i, j, k;
@@ -921,17 +952,23 @@ int main(int argc, char* argv[])
         print_usage(stdout);
         return 1;
     }
+    
+    // Load fingerprinting "database"
+    mfcuk_finger_load();
 
     // OPTION PROCESSING BLOCK
     // TODO: for WIN32 figure out how to use unistd/posix-compatible Gnu.Getopt.dll (http://getopt.codeplex.com)
     // For WIN32 using VERY limited (modified) Xgetopt (http://www.codeproject.com/KB/cpp/xgetopt.aspx)
-    while ((ch = getopt(argc, argv, "htTDi:I:o:O:V:R:S:s:v:M:U:d:n:")) != -1) // -1 or EOF
+    while ((ch = getopt(argc, argv, "htTDCi:I:o:O:V:R:S:s:v:M:U:d:n:P:p:F:")) != -1) // -1 or EOF
     {
         switch(ch)
         {
             // Name for the extended dump
             case 'n':
                 strncpy( tag_recover_verify.description, optarg, sizeof(tag_recover_verify.description) );
+                break;
+            case 'C':
+                bfOpts[ch] = true;
                 break;
             // Additional default key option
             case 'd':
@@ -1234,6 +1271,95 @@ int main(int argc, char* argv[])
                 test_mifare_classic_blocks_sectors_functions(MIFARE_CLASSIC_4K);
                 bfOpts[ch] = true;
                 break;
+            case 'P':
+                token = NULL;
+                str = optarg;
+                iter = 0;
+                
+                // parse the arguments of the option. ugly, ugly... i know :-S
+                while ( (token = strtok(str, sep)) && (iter < sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0])) )
+                {
+                    str = NULL;
+                    errno = 0;
+                    pm3_full_set_log[iter] = strtoul(token, NULL, 16);
+                    
+                    // strtoul failed somewhere. WTF?! strtoul() is not properly setting errno... errrrrggh!
+                    if (errno != 0)
+                    {
+                        fprintf(stderr, "WARN: Invalid hex literal %s for option -P\n", token);
+                    }
+                    
+                    iter++;
+                }
+                
+                // if not all arguments were fine, fire warning
+                if ( iter != sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0]) )
+                {
+                    fprintf(stderr, "WARN: Invalid number of hex literal for option -P\n", optarg);
+                }
+                // otherwise try to recover
+                else
+                {
+                    /*
+                    // TODO: implement better this function
+                    mfcuk_get_key_from_full_state(pm3_full_set, &ui64_lsfr);
+                    */
+                    pm3_ks2 = pm3_full_set_log[PM3_READER_RESP] ^ prng_successor(pm3_full_set_log[PM3_TAG_CHAL], 64);
+                    pm3_ks3 = pm3_full_set_log[PM3_TAG_RESP] ^ prng_successor(pm3_full_set_log[PM3_TAG_CHAL], 96);
+                    pm3_revstate = lfsr_recovery64(pm3_ks2, pm3_ks3);
+                    lfsr_rollback_word(pm3_revstate, 0, 0);
+                    lfsr_rollback_word(pm3_revstate, 0, 0);
+                    lfsr_rollback_word(pm3_revstate, pm3_full_set_log[PM3_NR_ENC], 1);
+                    lfsr_rollback_word(pm3_revstate, pm3_full_set_log[PM3_UID] ^ pm3_full_set_log[PM3_TAG_CHAL], 0);
+                    crypto1_get_lfsr(pm3_revstate, &pm3_lfsr);
+                    printf("proxmark3 log key: %02x%02x%02x%02x%02x%02x\n", pm3_plfsr[5], pm3_plfsr[4], pm3_plfsr[3], pm3_plfsr[2], pm3_plfsr[1], pm3_plfsr[0]);
+                    crypto1_destroy(pm3_revstate);
+                }
+                break;
+            case 'p':
+                /*
+                if (mfcuk_pm3_parse_log(optarg, pm3_full_set))
+                {
+                    mfcuk_get_key_from_full_state(pm3_full_set, &ui64_lsfr);
+                }
+                else
+                {
+                }
+                */
+                printf("NOT IMPLEMENTED YET...\n");
+                break;
+            case 'F':
+                if ( !mfcuk_load_tag_dump(optarg, &(finger_tag)) )
+                {
+                    fprintf(stderr, "WARN: Unable to load tag dump from '%s'\n", optarg);
+                }
+                else
+                {
+                    finger_score_highest = -1.0f;
+                    finger_index_highest = -1;
+                    for (i = 0; i<mfcuk_finger_db_entries; i++)
+                    {
+                        finger_score = -1.0f;
+                        mfcuk_finger_db[i].tmpl_comparison_func(&(finger_tag), mfcuk_finger_db[i].tmpl_data, &finger_score);
+                        
+                        if (finger_score > finger_score_highest)
+                        {
+                            finger_score_highest = finger_score;
+                            finger_index_highest = i;
+                        }
+                    }
+                    
+                    if (finger_index_highest > -1)
+                    {
+                        printf("Tag '%s' matches '%s' with highest score %f\n", optarg, mfcuk_finger_db[finger_index_highest].tmpl_name, finger_score_highest);
+                        mfcuk_finger_db[finger_index_highest].tmpl_decoder_func(&(finger_tag));
+                    }
+                    else
+                    {
+                        printf("No template found to match tag '%s'\n", optarg);
+                    }
+                }
+                break;
             case 'h':
                 // Help screen
                 print_usage(stdout);
@@ -1248,8 +1374,11 @@ int main(int argc, char* argv[])
                 break;
         }
     }
+    
+    // Unload fingerprinting
+    mfcuk_finger_unload();
 
-    // If tests were requested, exit
+    // If tests were requested, exit after tests completed
     if ( bfOpts['t'] || bfOpts['T'] )
     {
         return 0;
@@ -1312,6 +1441,12 @@ int main(int argc, char* argv[])
             tag_recover_verify.type = tag_recover_verify.tag_basic.amb[0].mbm.btUnknown;
             tag_recover_verify.uid = swap_endian32(tag_recover_verify.tag_basic.amb[0].mbm.abtUID);
         }
+    }
+    
+    if (!bfOpts['C'])
+    {
+        printf("NO Connection to reader requested (need option -C). Exiting...\n");
+        return 0;
     }
 
     // READER INITIALIZATION BLOCK
