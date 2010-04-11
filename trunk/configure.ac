@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.64])
-AC_INIT([mfcuk], [0.3], [zveriu@gmail.com])
+AC_INIT([mfcuk], [0.3.1], [zveriu@gmail.com])
 
 AM_INIT_AUTOMAKE
 
