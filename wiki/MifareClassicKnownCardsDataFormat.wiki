@@ -34,7 +34,7 @@ This information is presented in good faith and for informational purposes only.
 || Czech || Liberec || Liberec City Card || ? || http://www.mikroelektronika.cz/custom-made-electronics/novinky<br> http://www.mucl.cz/mestska-autobusova-doprava/opuscard/karta-opuscard.html || 4K || A0zzzzzzzzzz || Block 0x5F to 0xFF have equal key A<br> Block 0x5F to 0xFF have equal key B || Partially cleartext<br> Block4 = Surname Name (seem null terminated C strings)<br> Rest encoded/encrypted (?) || Block 1 and 2 = lots of every second byte is 0x18 || MEDIUM ||
 || Luxembourg || Luxembourg || Luxembourg (Public Transport) Card || ? || ? || 1K || FFzzzzzzzzzz || Block 0x00 to 0x33 have equal key A<br> Block 0x00 to 0x33 have equal key B || Encoded, seems no encryption or dynamic keys || Block 0x34, 0x35, 0x36, 0x38, 0x39, 03a, 0x3c, 0x3d, 0x3e = filled with 0xFF || MEDIUM ||
 || Russia || Moscow || Бесконтактные транспортные карты || <a href='http://www.rfida.com/2007/02/russia-rfid-transportation-application.htm'>5-30 millions (1998-2007)</a> || http://www.metro.ru/fare/contactless/ || ?K || ? || ? || ? || ? || ? ||
-|| Russia || Russia || Rossiyskie Zheleznye Dorogi/Russian Railways (RZhD) || http://www.rzd.ru/isvp/public/rzd?STRUCTURE_ID=5064&layer_id=4064&refererLayerId=4063&id=312006&forum_id=12#2<br> http://www.old.recon.ru/daily/page1_3918.php || ? || ? || ? || ? || ? || ? || ? ||
+|| Russia || Russia || Rossiyskie Zheleznye Dorogi/Russian Railways (RZhD) || <a href='http://www.rzd.ru/isvp/public/rzd?STRUCTURE_ID=5064&layer_id=4064&refererLayerId=4063&id=312006&forum_id=12#2'>Forum notes</a><br> <a href='http://www.old.recon.ru/daily/page1_3918.php'>News notes</a> || ? || ? || ? || ? || ? || ? || ? ||
 
 
 
