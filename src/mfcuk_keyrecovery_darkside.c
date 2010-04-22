@@ -186,7 +186,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     byte_t abtArEncPar[8]    = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
     byte_t abtRx[MAX_FRAME_LEN];
     byte_t abtRxPar[MAX_FRAME_LEN];
-    uint32_t uiRxLen;
+    size_t szRx;
     uint32_t nt, nt_orig; // Supplied tag nonce
     
     if ( (bKeyType != keyA) && (bKeyType != keyB) )
@@ -216,7 +216,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     }
 
     // Request plain tag-nonce
-    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&uiRxLen))
+    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx))
     {
         return MFCUK_FAIL_COMM;
     }
@@ -275,14 +275,14 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
         return MFCUK_FAIL_COMM;
     }
 
-    if ( !nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&uiRxLen,abtRxPar) )
+    if ( !nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&szRx,abtRxPar) )
     {
 	    return MFCUK_FAIL_AUTH;
     }
 
     crypto1_destroy(pcs);
 
-    if (uiRxLen == 32)
+    if (szRx == 32)
     {
         for (pos=0; pos<4; pos++)   
         {
@@ -325,7 +325,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     byte_t abtArEncPar[8]    = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
     byte_t abtRx[MAX_FRAME_LEN];
     byte_t abtRxPar[MAX_FRAME_LEN];
-    uint32_t uiRxLen;
+    size_t szRx;
 
     // zveriu
     static uint32_t nt_orig = 0;
@@ -364,7 +364,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
 
     // Request plain tag-nonce
     //printf("Nt: ");
-    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&uiRxLen))
+    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx))
     {
         //printf("\n\nFAILURE - Failed to get TAG NONCE!!!\n\n");
         return MFCUK_FAIL_COMM;
@@ -555,7 +555,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     //printf(" Ar: ");
     //print_hex_par(abtArEnc,64,abtArEncPar);
 
-    if (!nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&uiRxLen,abtRxPar))
+    if (!nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&szRx,abtRxPar))
     {
         if (sendSpoofAr)
         {
@@ -565,10 +565,10 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
 	    return MFCUK_FAIL_AUTH;
     }
 
-	// zveriu - Successful: either authentication (uiRxLen == 32) either encrypted 0x5 reponse (uiRxLen == 4)
-	if (uiRxLen == 4)
+	// zveriu - Successful: either authentication (szRx == 32) either encrypted 0x5 reponse (szRx == 4)
+	if (szRx == 4)
 	{
-		//printf("INFO - 4-bit (uiRxLen=%d) error code 0x5 encrypted (abtRx=0x%02x)\n", uiRxLen, abtRx[0] & 0xf);
+		//printf("INFO - 4-bit (szRx=%d) error code 0x5 encrypted (abtRx=0x%02x)\n", szRx, abtRx[0] & 0xf);
 
         if (ptrFoundTagNonceEntry->current_out_of_8 < 0)
         {
@@ -639,7 +639,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
             }
         }
 	}
-    else if (uiRxLen == 32)
+    else if (szRx == 32)
     {
         // Are we so MFCUKing lucky (?!), since ui64Key is a "dummy" key
         flag_key_recovered = true;
@@ -647,7 +647,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     }
 
     //printf(" At: "); 
-    //print_hex_par(abtRx,uiRxLen,abtRxPar);
+    //print_hex_par(abtRx,szRx,abtRxPar);
 
     crypto1_destroy(pcs);
 
