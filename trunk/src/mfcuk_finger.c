@@ -47,7 +47,7 @@ mfcuk_finger_tmpl_entry mfcuk_finger_db[] =
 
 int mfcuk_finger_db_entries = sizeof(mfcuk_finger_db)/sizeof(mfcuk_finger_db[0]);
 
-int mfcuk_finger_default_decoder(mifare_tag *dump)
+int mfcuk_finger_default_decoder(mifare_classic_tag *dump)
 {
     if (!dump)
     {
@@ -62,7 +62,7 @@ int mfcuk_finger_default_decoder(mifare_tag *dump)
 }
 
 // Yes, I know C++ class inheritance would perfectly fit the decoders/comparators... Though C is more to my heart. Anyone to rewrite in C++?
-int mfcuk_finger_skgt_decoder(mifare_tag *dump)
+int mfcuk_finger_skgt_decoder(mifare_classic_tag *dump)
 {
     unsigned char *dump_ptr = NULL;
     unsigned short car_number = 0;
@@ -85,7 +85,7 @@ int mfcuk_finger_skgt_decoder(mifare_tag *dump)
     return 1;
 }
 
-int mfcuk_finger_default_comparator(mifare_tag *dump, mfcuk_finger_template *tmpl, float *score)
+int mfcuk_finger_default_comparator(mifare_classic_tag *dump, mfcuk_finger_template *tmpl, float *score)
 {
     int max_bytes = 0;
     int i;
@@ -140,8 +140,8 @@ int mfcuk_finger_default_comparator(mifare_tag *dump, mfcuk_finger_template *tmp
 int mfcuk_finger_load()
 {
     int i;
-    mifare_tag mask;
-    mifare_tag values;
+    mifare_classic_tag mask;
+    mifare_classic_tag values;
     FILE *fp = NULL;
     size_t result = 0;
     mfcuk_finger_template *tmpl_new = NULL;

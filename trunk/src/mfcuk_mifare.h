@@ -57,7 +57,7 @@
 #include <stdlib.h>
 
 #include <nfc/nfc.h>
-#include <nfc/mifaretag.h>
+#include "mifare.h"
 
 #define MIFARE_CLASSIC_UID_BYTELENGTH           4       // Length of a Mifare Classic UID in bytes
 #define MIFARE_CLASSIC_KEY_BYTELENGTH           6       // Length of a Mifare Classic key in bytes
@@ -104,8 +104,8 @@ typedef struct {
     byte_t type; // ATS/SAK from ti.tia.btSak, example 0x08h for Mifare 1K, 0x18h for Mifare 4K
     char datetime[14]; // non-zero-terminated date-time of dump in format YYYYMMDDH24MISS, example 20091114231541 - 14 Nov 2009, 11:15:41 PM
     char description[MFCUK_EXTENDED_DESCRIPTION_LENGTH]; // a description of the tag dump, example "RATB_DUMP_BEFORE_PAY"
-    mifare_tag tag_basic;
-} mifare_tag_ext;
+    mifare_classic_tag tag_basic;
+} mifare_classic_tag_ext;
 
 // Define type of keys (A or B) in NXP notation
 typedef enum {
@@ -134,11 +134,11 @@ bool is_last_sector(byte_t bTagType, uint32_t uiSector);
 bool is_last_big_sector(byte_t bTagType, uint32_t uiSector);
 bool is_last_small_sector(byte_t bTagType, uint32_t uiSector);
 void test_mifare_classic_blocks_sectors_functions(byte_t bTagType);
-bool mfcuk_save_tag_dump(char *filename, mifare_tag *tag);
-bool mfcuk_save_tag_dump_ext(char *filename, mifare_tag_ext *tag_ext);
-bool mfcuk_load_tag_dump(char *filename, mifare_tag *tag);
-bool mfcuk_load_tag_dump_ext(char *filename, mifare_tag_ext *tag_ext);
-void print_mifare_tag_keys(const char *title, mifare_tag *tag);
+bool mfcuk_save_tag_dump(char *filename, mifare_classic_tag *tag);
+bool mfcuk_save_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext);
+bool mfcuk_load_tag_dump(char *filename, mifare_classic_tag *tag);
+bool mfcuk_load_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext);
+void print_mifare_classic_tag_keys(const char *title, mifare_classic_tag *tag);
 bool mfcuk_key_uint64_to_arr(const uint64_t *ui64Key, byte_t *arr6Key);
 bool mfcuk_key_arr_to_uint64(const byte_t *arr6Key, uint64_t *ui64Key);
 

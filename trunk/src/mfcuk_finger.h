@@ -47,13 +47,13 @@
 // Wrapping an ugly template into an externally pleasant name. To implement proper template later.
 typedef struct _mfcuk_finger_template_
 {
-    mifare_tag mask;
-    mifare_tag values;
+    mifare_classic_tag mask;
+    mifare_classic_tag values;
 } mfcuk_finger_template;
 
 // Function type definition, to be used for custom decoders/comparators
-typedef int (*mfcuk_finger_comparator) (mifare_tag *dump, mfcuk_finger_template *tmpl, float *score);
-typedef int (*mfcuk_finger_decoder) (mifare_tag *dump);
+typedef int (*mfcuk_finger_comparator) (mifare_classic_tag *dump, mfcuk_finger_template *tmpl, float *score);
+typedef int (*mfcuk_finger_decoder) (mifare_classic_tag *dump);
 
 // Naive implementation of a self-contained fingerprint database entry
 typedef struct _mfcuk_finger_tmpl_entry_
@@ -65,9 +65,9 @@ typedef struct _mfcuk_finger_tmpl_entry_
     mfcuk_finger_template *tmpl_data;
 } mfcuk_finger_tmpl_entry;
 
-int mfcuk_finger_default_comparator(mifare_tag *dump, mfcuk_finger_template *tmpl, float *score);
-int mfcuk_finger_default_decoder(mifare_tag *dump);
-int mfcuk_finger_skgt_decoder(mifare_tag *dump);
+int mfcuk_finger_default_comparator(mifare_classic_tag *dump, mfcuk_finger_template *tmpl, float *score);
+int mfcuk_finger_default_decoder(mifare_classic_tag *dump);
+int mfcuk_finger_skgt_decoder(mifare_classic_tag *dump);
 
 // "Housekeeping" functions
 int mfcuk_finger_load();

@@ -131,13 +131,23 @@
     #include <sys/types.h>
 #endif
 
+// NFC
 #include <nfc/nfc.h>
+#include <nfc/nfc-types.h>
+
+// Crapto1
 #include "crapto1.h"
     // FIXME: For some reason (reason=I am dumb perhaps), these two prototypes are not visible form crapto1.h, so I put them here
     struct Crypto1State* lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]);
     uint32_t lfsr_rollback_word(struct Crypto1State* s, uint32_t in, int fb);
     // :FIXME
-#include <nfc/mifaretag.h>
+
+// imported from libnfc's examples
+#include "mifare.h"
+#include "nfc-utils.h"
+#include "mirror-subr.h"
+
+// internal
 #include "mfcuk_mifare.h"
 #include "mfcuk_utils.h"
 #include "mfcuk_finger.h"
@@ -215,6 +225,9 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
         return MFCUK_FAIL_COMM;
     }
 
+    // We need to disable EASY_FRAMING feature to talk in "raw" mode
+    nfc_configure (pnd, NDO_EASY_FRAMING, false);
+
     // Request plain tag-nonce
     if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx))
     {
@@ -222,7 +235,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     }
 
     // Save the tag nonce (nt)
-    nt = swap_endian32(abtRx);
+    nt = mirror_bytes(abtRx, 4);
     nt_orig = nt;
     
     // Init cipher with key
@@ -372,7 +385,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     //print_hex(abtRx,4);
 
     // Save the tag nonce (nt)
-    nt = swap_endian32(abtRx);
+    nt = mirror_bytes(abtRx, 4);
 
 	// zveriu
 	//printf("INFO - Nonce distance %d (from 0x%08x, to 0x%08x)\n", nonce_distance(nt, nt_orig), nt, nt_orig);
@@ -672,9 +685,9 @@ void print_usage(FILE *fp)
     fprintf(fp, "\n");
     fprintf(fp, "Usage:\n");
     fprintf(fp, "-C - require explicit connection to the reader. Without this option, the connection is not made and recovery will not occur\n");
-    fprintf(fp, "-i mifare.dmp - load input mifare_tag type dump\n");
-    fprintf(fp, "-I mifare_ext.dmp - load input extended dump specific to this tool, has several more fields on top of mifare_tag type dump\n");
-    fprintf(fp, "-o mifare.dmp - output the resulting mifare_tag dump to a given file\n");
+    fprintf(fp, "-i mifare.dmp - load input mifare_classic_tag type dump\n");
+    fprintf(fp, "-I mifare_ext.dmp - load input extended dump specific to this tool, has several more fields on top of mifare_classic_tag type dump\n");
+    fprintf(fp, "-o mifare.dmp - output the resulting mifare_classic_tag dump to a given file\n");
     fprintf(fp, "-O mifare_ext.dmp - output the resulting extended dump to a given file\n");
     fprintf(fp, "-V sector[:A/B/any_other_alphanum[:fullkey]] - verify key for specified sector, -1 means all sectors\n");
     fprintf(fp, "\tAfter first semicolon key-type can specified: A verifies only keyA, B verifies only keyB, anything else verifies both keys\n");
@@ -707,11 +720,11 @@ void print_identification()
 
 
 
-void print_mifare_tag_actions(const char *title, mifare_tag *tag)
+void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag)
 {
     uint32_t i, max_blocks, trailer_block;
     byte_t bTagType;
-    mifare_block_trailer *ptr_trailer = NULL;
+    mifare_classic_block_trailer *ptr_trailer = NULL;
 
     if (!tag)
     {
@@ -751,7 +764,7 @@ void print_mifare_tag_actions(const char *title, mifare_tag *tag)
             break;
         }
 
-        ptr_trailer = (mifare_block_trailer *) ((char *)tag + (trailer_block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+        ptr_trailer = (mifare_classic_block_trailer *) ((char *)tag + (trailer_block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
         printf("%d\t|  %02x%02x%02x%02x%02x%02x\t| %c %c | %c %c\t|  %02x%02x%02x%02x%02x%02x\t| %c %c | %c %c\n", 
             get_sector_for_block(bTagType, trailer_block),
@@ -846,7 +859,7 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     sleep(iSleepAfterFieldON);
 
     // Poll for a ISO14443A (MIFARE) tag
-    if (!nfc_initiator_select_tag(pnd,NM_ISO14443A_106,NULL,0,&ti_tmp))
+    if (!nfc_initiator_select_passive_target(pnd,NM_ISO14443A_106,NULL,0,&ti_tmp))
     {
         fprintf(stderr, "ERROR: connecting to MIFARE Classic tag\n");
         //nfc_disconnect(pnd);
@@ -866,8 +879,8 @@ int main(int argc, char* argv[])
     //char extendedDescription[MFCUK_EXTENDED_DESCRIPTION_LENGTH] = {0}; // Initialize with '\0' character
     byte_t keyOpt[MIFARE_CLASSIC_KEY_BYTELENGTH] = {0};
     byte_t uidOpt[MIFARE_CLASSIC_UID_BYTELENGTH] = {0};
-    mifare_block_trailer *ptr_trailer = NULL;
-    mifare_block_trailer *ptr_trailer_dump = NULL;
+    mifare_classic_block_trailer *ptr_trailer = NULL;
+    mifare_classic_block_trailer *ptr_trailer_dump = NULL;
     int sector = 0;
     uint32_t block = 0;
     byte_t action = 0;
@@ -891,13 +904,13 @@ int main(int argc, char* argv[])
     uint64_t ui64Key = 0xc1e51c63b8f5;//0xffffffffffff;
     uint32_t uiErrCode = MFCUK_SUCCESS;
     uint64_t ui64KeyRecovered;
-    mifare_tag_ext dump_loaded_tag;
-    mifare_tag_ext tag_on_reader;
-    mifare_tag_ext tag_recover_verify;
+    mifare_classic_tag_ext dump_loaded_tag;
+    mifare_classic_tag_ext tag_on_reader;
+    mifare_classic_tag_ext tag_recover_verify;
     mifare_key_type bKeyType = keyA;
     
     // fingerprint options related
-    mifare_tag finger_tag;
+    mifare_classic_tag finger_tag;
     float finger_score;
     float finger_score_highest;
     int finger_index_highest;
@@ -1059,7 +1072,7 @@ int main(int argc, char* argv[])
 
                 if (st >= MIFARE_CLASSIC_UID_BYTELENGTH)
                 {
-                    tag_recover_verify.uid = swap_endian32(uidOpt);
+                    tag_recover_verify.uid = mirror_bytes(uidOpt, 4);
                     memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, uidOpt, MIFARE_CLASSIC_UID_BYTELENGTH );
                     bfOpts[ch] = true;
                 }
@@ -1125,7 +1138,7 @@ int main(int argc, char* argv[])
                                 {
                                     // TODO: proper error handling for block and ptr_trailer
                                     block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-                                    ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+                                    ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
                                     ptr_trailer->abtAccessBits[ACTIONS_KEY_A] |= action;
                                     ptr_trailer->abtAccessBits[ACTIONS_KEY_B] |= action;
@@ -1146,7 +1159,7 @@ int main(int argc, char* argv[])
                                     {
                                         // TODO: proper error handling for block and ptr_trailer
                                         block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-                                        ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+                                        ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
                                         ptr_trailer->abtAccessBits[ACTIONS_KEY_B * (1 - (token[0]-'A'))] &= (~action);
                                     }
@@ -1159,7 +1172,7 @@ int main(int argc, char* argv[])
                                     {
                                         // TODO: proper error handling for block and ptr_trailer
                                         block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-                                        ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+                                        ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
                                         ptr_trailer->abtAccessBits[ACTIONS_KEY_A] |= action;
                                         ptr_trailer->abtAccessBits[ACTIONS_KEY_B] |= action;
@@ -1200,7 +1213,7 @@ int main(int argc, char* argv[])
                             {
                                 // TODO: proper error handling for block and ptr_trailer
                                 block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-                                ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+                                ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
                                 if ( !specific_key_type || specific_key_type == keyA )
                                 {
@@ -1224,7 +1237,7 @@ int main(int argc, char* argv[])
                 }
                 break;
             case 'i':
-                // Input simple dump file of type mifare_tag, Options i and I are autoexclusive
+                // Input simple dump file of type mifare_classic_tag, Options i and I are autoexclusive
                 if (!bfOpts['i'] && !bfOpts['I'])
                 {
                     if ( !mfcuk_load_tag_dump(optarg, &(dump_loaded_tag.tag_basic)) )
@@ -1238,7 +1251,7 @@ int main(int argc, char* argv[])
                 }
                 break;
             case 'I':
-                // // Input extended dump file of type mifare_tag_ext, Options i and I are autoexclusive
+                // // Input extended dump file of type mifare_classic_tag_ext, Options i and I are autoexclusive
                 if (!bfOpts['i'] && !bfOpts['I'])
                 {
                     if ( !mfcuk_load_tag_dump_ext(optarg, &(dump_loaded_tag)) )
@@ -1405,7 +1418,7 @@ int main(int argc, char* argv[])
     {
         if (bfOpts['v'] && (verboseLevel > 0))
         {
-            print_mifare_tag_keys("LOADED TAG DUMP", &(dump_loaded_tag.tag_basic));
+            print_mifare_classic_tag_keys("LOADED TAG DUMP", &(dump_loaded_tag.tag_basic));
         }
 
         // Overwrite from the loaded dump only the keys for sectors and keys which were not specified on command line
@@ -1413,8 +1426,8 @@ int main(int argc, char* argv[])
         {
             // TODO: proper error handling for block and ptr_trailer
             block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-            ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
-            ptr_trailer_dump = (mifare_block_trailer *) ((char *)(&dump_loaded_tag.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+            ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+            ptr_trailer_dump = (mifare_classic_block_trailer *) ((char *)(&dump_loaded_tag.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
             // If no command line keyA is set, copy from loaded dump
             if ( !(ptr_trailer->abtAccessBits[ACTIONS_KEY_A] & ACTIONS_KEYSET) )
@@ -1434,12 +1447,12 @@ int main(int argc, char* argv[])
         // If no command line UID supplied and not tag-type specified, copy the manufacturer block from the loaded dump
         if ( !bfOpts['U'] && !bfOpts['M'] )
         {
-            ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (0 * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
-            ptr_trailer_dump = (mifare_block_trailer *) ((char *)(&dump_loaded_tag.tag_basic) + (0 * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+            ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (0 * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+            ptr_trailer_dump = (mifare_classic_block_trailer *) ((char *)(&dump_loaded_tag.tag_basic) + (0 * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
             memcpy( ptr_trailer, ptr_trailer_dump, sizeof(*ptr_trailer) );
             tag_recover_verify.type = tag_recover_verify.tag_basic.amb[0].mbm.btUnknown;
-            tag_recover_verify.uid = swap_endian32(tag_recover_verify.tag_basic.amb[0].mbm.abtUID);
+            tag_recover_verify.uid = mirror_bytes(tag_recover_verify.tag_basic.amb[0].mbm.abtUID, 4);
         }
     }
     
@@ -1490,19 +1503,19 @@ int main(int argc, char* argv[])
     }
 
     // Tag on the reader UID
-    tag_on_reader.uid = swap_endian32(ti.nai.abtUid);
+    tag_on_reader.uid = mirror_bytes(ti.nai.abtUid, 4);
     memcpy( tag_on_reader.tag_basic.amb[0].mbm.abtUID, ti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
 
     // No command line tag UID specified, take it from the tag on the reader
     if ( !bfOpts['U'] )
     {
-        tag_recover_verify.uid = swap_endian32(ti.nai.abtUid);
+        tag_recover_verify.uid = mirror_bytes(ti.nai.abtUid, 4);
         memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, ti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
     }
 
     if (bfOpts['v'] && (verboseLevel > 0))
     {
-        print_mifare_tag_actions("\n\nINITIAL ACTIONS MATRIX", &(tag_recover_verify.tag_basic));
+        print_mifare_classic_tag_actions("\n\nINITIAL ACTIONS MATRIX", &(tag_recover_verify.tag_basic));
     }
 
     max_sectors = (IS_MIFARE_CLASSIC_1K(tag_recover_verify.type)?MIFARE_CLASSIC_1K_MAX_SECTORS:MIFARE_CLASSIC_4K_MAX_SECTORS);
@@ -1531,7 +1544,7 @@ int main(int argc, char* argv[])
 
             // TODO: proper error handling
             block = get_trailer_block_for_sector(crntVerifTagType, i);
-            ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+            ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
             // If DEFAULT KEYS option was specified, crntNumVerifKeys is already taking care of them
             // Also, perform verification ontly if the sector has been marked for verification of key and not valid verification yet occured in the loop
@@ -1552,7 +1565,7 @@ int main(int argc, char* argv[])
                     fprintf(stderr, "WARN: mfcuk_key_arr_to_uint64() failed, verification key will be %012llx\n", crntVerifKey);
                 }
 
-                /*
+		/*
                 // TODO: make this kind of key verification as part of option -a - advanced verification of keys with crapto1 rollback for double verification
                 // TEST
                 nfc_disconnect(pnd);
@@ -1591,12 +1604,11 @@ int main(int argc, char* argv[])
 
                 // Reset advanced settings
                 mfcuk_darkside_reset_advanced(pnd);
-                */
-
+		*/
                 memcpy(mp.mpa.abtUid, tag_recover_verify.tag_basic.amb[0].mbm.abtUID, MIFARE_CLASSIC_UID_BYTELENGTH);
                 memcpy(mp.mpa.abtKey, &(current_default_keys[j][0]), MIFARE_CLASSIC_KEY_BYTELENGTH);
                 
-                if ( !nfc_initiator_select_tag(pnd, NM_ISO14443A_106, NULL, 0, &ti) )
+                if ( !nfc_initiator_select_passive_target(pnd, NM_ISO14443A_106, NULL, 0, &ti) )
                 {
                     fprintf(stderr, "ERROR: tag was removed or cannot be selected\n");
                 }
@@ -1621,7 +1633,7 @@ int main(int argc, char* argv[])
 
     if ( bfOpts['v'] && (verboseLevel > 0) )
     {
-        print_mifare_tag_actions("\n\nACTION RESULTS MATRIX AFTER VERIFY", &(tag_recover_verify.tag_basic));
+        print_mifare_classic_tag_actions("\n\nACTION RESULTS MATRIX AFTER VERIFY", &(tag_recover_verify.tag_basic));
     }
 
     // RECOVER KEYS CODE-BLOCK
@@ -1632,7 +1644,7 @@ int main(int argc, char* argv[])
         ui64KeyRecovered = 0;
 
         block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-        ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+        ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
         printf(" %x", i);
         fflush(stdout);
@@ -1723,7 +1735,7 @@ int main(int argc, char* argv[])
 
     if ( bfOpts['v'] && (verboseLevel > 0) )
     {
-        print_mifare_tag_actions("\n\nACTION RESULTS MATRIX AFTER RECOVER", &(tag_recover_verify.tag_basic));
+        print_mifare_classic_tag_actions("\n\nACTION RESULTS MATRIX AFTER RECOVER", &(tag_recover_verify.tag_basic));
     }
 
     // DUMP DATA CODE-BLOCK
@@ -1732,7 +1744,7 @@ int main(int argc, char* argv[])
     for (i=0; i<max_sectors; i++)
     {
         block = get_trailer_block_for_sector(MIFARE_CLASSIC_4K, i);
-        ptr_trailer = (mifare_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+        ptr_trailer = (mifare_classic_block_trailer *) ((char *)(&tag_recover_verify.tag_basic) + (block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
         //nfc_initiator_mifare_cmd()
     }

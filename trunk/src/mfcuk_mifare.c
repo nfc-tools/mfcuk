@@ -357,7 +357,7 @@ void test_mifare_classic_blocks_sectors_functions(byte_t bTagType)
 
 }
 
-bool mfcuk_save_tag_dump(char *filename, mifare_tag *tag)
+bool mfcuk_save_tag_dump(char *filename, mifare_classic_tag *tag)
 {
     FILE *fp;
     size_t result;
@@ -382,7 +382,7 @@ bool mfcuk_save_tag_dump(char *filename, mifare_tag *tag)
     return true;
 }
 
-bool mfcuk_save_tag_dump_ext(char *filename, mifare_tag_ext *tag_ext)
+bool mfcuk_save_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext)
 {
     FILE *fp;
     size_t result;
@@ -407,7 +407,7 @@ bool mfcuk_save_tag_dump_ext(char *filename, mifare_tag_ext *tag_ext)
     return true;
 }
 
-bool mfcuk_load_tag_dump(char *filename, mifare_tag *tag)
+bool mfcuk_load_tag_dump(char *filename, mifare_classic_tag *tag)
 {
     FILE *fp;
     size_t result;
@@ -432,7 +432,7 @@ bool mfcuk_load_tag_dump(char *filename, mifare_tag *tag)
     return true;
 }
 
-bool mfcuk_load_tag_dump_ext(char *filename, mifare_tag_ext *tag_ext)
+bool mfcuk_load_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext)
 {
     FILE *fp;
     size_t result;
@@ -457,11 +457,11 @@ bool mfcuk_load_tag_dump_ext(char *filename, mifare_tag_ext *tag_ext)
     return true;
 }
 
-void print_mifare_tag_keys(const char *title, mifare_tag *tag)
+void print_mifare_classic_tag_keys(const char *title, mifare_classic_tag *tag)
 {
     uint32_t i, max_blocks, trailer_block;
     byte_t bTagType;
-    mifare_block_trailer *ptr_trailer = NULL;
+    mifare_classic_block_trailer *ptr_trailer = NULL;
 
     if (!tag)
     {
@@ -501,7 +501,7 @@ void print_mifare_tag_keys(const char *title, mifare_tag *tag)
             break;
         }
 
-        ptr_trailer = (mifare_block_trailer *) ((char *)tag + (trailer_block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
+        ptr_trailer = (mifare_classic_block_trailer *) ((char *)tag + (trailer_block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
         printf("%d\t|  %02x%02x%02x%02x%02x%02x\t|  %02x%02x%02x%02x\t|  %02x%02x%02x%02x%02x%02x\n", 
             get_sector_for_block(bTagType, trailer_block),
