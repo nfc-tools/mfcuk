@@ -233,6 +233,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     {
         return MFCUK_FAIL_COMM;
     }
+    nfc_configure (pnd, NDO_EASY_FRAMING, true);
 
     // Save the tag nonce (nt)
     nt = mirror_bytes(abtRx, 4);
@@ -375,6 +376,9 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     // Now we take over, first we need full control over the CRC
     nfc_configure(pnd,NDO_HANDLE_CRC,false);
 
+    // We need to disable EASY_FRAMING feature to talk in "raw" mode
+    nfc_configure (pnd, NDO_EASY_FRAMING, false);
+
     // Request plain tag-nonce
     //printf("Nt: ");
     if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx))
@@ -382,6 +386,8 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
         //printf("\n\nFAILURE - Failed to get TAG NONCE!!!\n\n");
         return MFCUK_FAIL_COMM;
     }
+    nfc_configure (pnd, NDO_EASY_FRAMING, true);
+
     //print_hex(abtRx,4);
 
     // Save the tag nonce (nt)
