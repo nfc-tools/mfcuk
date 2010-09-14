@@ -173,6 +173,15 @@
 
 #define MAX_FRAME_LEN       264
 
+#ifdef DEBUG
+#  warning Debug mode is enabled
+#  define WARN(...) fprintf(stderr, "%s %d: ", __FILE__, __LINE__ ); warnx ("  WARNING: " __VA_ARGS__ )
+#  define ERR(...)  fprintf(stderr, "%s %d: ", __FILE__, __LINE__ ); warnx ("  ERROR " __VA_ARGS__ )
+#else
+#  define WARN(...) warnx ("WARNING: " __VA_ARGS__ )
+#  define ERR(...)  warnx ("ERROR: " __VA_ARGS__ )
+#endif
+
 extern mfcuk_finger_tmpl_entry mfcuk_finger_db[];
 extern int mfcuk_finger_db_entries;
 
@@ -734,11 +743,11 @@ void print_usage(FILE *fp)
 
 void print_identification()
 {
-    fprintf(stdout, "\n");
     fprintf(stdout, "%s - %s\n", PACKAGE_NAME, PACKAGE_VERSION);
     fprintf(stdout, "%s - %s\n", BUILD_NAME, BUILD_VERSION);
     fprintf(stdout, "by %s\n", BUILD_AUTHOR);
     fprintf(stdout, "\n");
+    WARN("Hello world!");
 }
 
 
@@ -818,13 +827,13 @@ bool mfcuk_darkside_reset_advanced(nfc_device_t* pnd)
 {
     if ( !nfc_configure(pnd,NDO_HANDLE_CRC,true) )
     {
-        //fprintf(stderr, "ERROR: configuring NDO_HANDLE_CRC\n");
+        //ERR("configuring NDO_HANDLE_CRC");
         //return false;
     }
 
     if ( !nfc_configure(pnd,NDO_HANDLE_PARITY,true) )
     {
-        //fprintf(stderr, "ERROR: configuring NDO_HANDLE_PARITY\n");
+        //ERR("configuring NDO_HANDLE_PARITY");
         //return false;
     }
 
@@ -837,14 +846,14 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
 
     if ( !pnd || !ti )
     {
-        fprintf(stderr, "ERROR: some parameter are NULL\n");
+        ERR("some parameter are NULL");
         return false;
     }
 
     // Drop the field for a while, so the card can reset
     if ( !nfc_configure(pnd,NDO_ACTIVATE_FIELD,false) )
     {
-        fprintf(stderr, "ERROR: configuring NDO_ACTIVATE_FIELD\n");
+        ERR("configuring NDO_ACTIVATE_FIELD");
         return false;
     }
 
@@ -854,27 +863,27 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     // Let the reader only try once to find a tag
     if ( !nfc_configure(pnd,NDO_INFINITE_SELECT,false) )
     {
-        fprintf(stderr, "ERROR: configuring NDO_INFINITE_SELECT\n");
+        ERR("configuring NDO_INFINITE_SELECT");
         return false;
     }
 
     // Configure the CRC and Parity settings
     if ( !nfc_configure(pnd,NDO_HANDLE_CRC,true) )
     {
-        fprintf(stderr, "ERROR: configuring NDO_HANDLE_CRC\n");
+        ERR("configuring NDO_HANDLE_CRC");
         return false;
     }
 
     if ( !nfc_configure(pnd,NDO_HANDLE_PARITY,true) )
     {
-        fprintf(stderr, "ERROR: configuring NDO_HANDLE_PARITY\n");
+        ERR("configuring NDO_HANDLE_PARITY");
         return false;
     }
 
     // Enable field so more power consuming cards can power themselves up
     if ( !nfc_configure(pnd,NDO_ACTIVATE_FIELD,true) )
     {
-        fprintf(stderr, "ERROR: configuring NDO_ACTIVATE_FIELD\n");
+        ERR("configuring NDO_ACTIVATE_FIELD");
         return false;
     }
 
@@ -884,7 +893,7 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     // Poll for a ISO14443A (MIFARE) tag
     if (!nfc_initiator_select_passive_target(pnd,NM_ISO14443A_106,NULL,0,&ti_tmp))
     {
-        fprintf(stderr, "ERROR: connecting to MIFARE Classic tag\n");
+        ERR("connecting to MIFARE Classic tag");
         //nfc_disconnect(pnd);
         return false;
     }
@@ -958,7 +967,7 @@ int main(int argc, char* argv[])
     // At runtime, duplicate the mfcuk_default_keys[], and then add at it's bottom the default keys specified via -d command line options
     if ( !(current_default_keys = malloc(numDefKeys * MIFARE_CLASSIC_KEY_BYTELENGTH)) )
     {
-        fprintf(stderr, "ERROR: failed to allocate memory for current_default_keys\n");
+        ERR("failed to allocate memory for current_default_keys");
         return 1;
     }
 
@@ -1010,7 +1019,7 @@ int main(int argc, char* argv[])
                 if ( strlen(optarg) != (MIFARE_CLASSIC_KEY_BYTELENGTH*2) )
                 {
                     // accept only 12 hex digits (fully qualified) Mifare Classic keys
-                    fprintf(stderr, "WARN: invalid length key argument (%s)\n", optarg);
+                    WARN("invalid length key argument (%s)", optarg);
                     break;
                 }
 
@@ -1019,7 +1028,7 @@ int main(int argc, char* argv[])
                     if ( !is_hex(optarg[2 * st]) || !is_hex(optarg[2 * st + 1]) )
                     {
                         // bad input hex string
-                        fprintf(stderr, "WARN: invalid hex chars in key argument (%s)\n", optarg);
+                        WARN("invalid hex chars in key argument (%s)", optarg);
                         break;
                     }
                     keyOpt[st] = hex2bin(optarg[2 * st], optarg[2 * st + 1]);
@@ -1032,7 +1041,7 @@ int main(int argc, char* argv[])
                 // so realloc() will not impact performance and will not fragment memory
                 if ( !(current_default_keys = realloc(current_default_keys, numDefKeys * MIFARE_CLASSIC_KEY_BYTELENGTH)) )
                 {
-                    fprintf(stderr, "ERROR: failed to reallocate memory for current_default_keys\n");
+                    ERR("failed to reallocate memory for current_default_keys");
                     return 1;
                 }
 
@@ -1049,7 +1058,7 @@ int main(int argc, char* argv[])
             case 'v':
                 if ( !(i = atoi(optarg)) || (i < 1) )
                 {
-                    fprintf(stderr, "WARN: non-supported verbose-level value (%s)\n", optarg);
+                    WARN("non-supported verbose-level value (%s)", optarg);
                 }
                 else
                 {
@@ -1061,7 +1070,7 @@ int main(int argc, char* argv[])
                 // Mifare Classic type option
                 if ( !(i = atoi(optarg)) || (!IS_MIFARE_CLASSIC_1K(i) && !IS_MIFARE_CLASSIC_4K(i)) )
                 {
-                    fprintf(stderr, "WARN: non-supported tag type value (%s)\n", optarg);
+                    WARN("non-supported tag type value (%s)", optarg);
                 }
                 else
                 {
@@ -1075,7 +1084,7 @@ int main(int argc, char* argv[])
                 if ( strlen(optarg) != (MIFARE_CLASSIC_UID_BYTELENGTH*2) )
                 {
                     // accept only 8 hex digits (fully qualified) Mifare Classic keys
-                    fprintf(stderr, "WARN: invalid length UID argument (%s)\n", optarg);
+                    WARN("invalid length UID argument (%s)", optarg);
                     break;
                 }
 
@@ -1084,7 +1093,7 @@ int main(int argc, char* argv[])
                     if ( !is_hex(optarg[2 * st]) || !is_hex(optarg[2 * st + 1]) )
                     {
                         // bad input hex string
-                        fprintf(stderr, "WARN: invalid hex chars in key argument (%s)\n", optarg);
+                        WARN("invalid hex chars in key argument (%s)", optarg);
                         break;
                     }
                     uidOpt[st] = hex2bin(optarg[2 * st], optarg[2 * st + 1]);
@@ -1101,7 +1110,7 @@ int main(int argc, char* argv[])
                 // Sleep for "AT FIELD OFF"
                 if ( !(i = atoi(optarg)) || (i < 1) || (i > 10000) )
                 {
-                    fprintf(stderr, "WARN: non-supported sleep-AT-field OFF value (%s)\n", optarg);
+                    WARN("non-supported sleep-AT-field OFF value (%s)", optarg);
                 }
                 else
                 {
@@ -1113,7 +1122,7 @@ int main(int argc, char* argv[])
                 // Sleep for "AFTER FIELD ON"
                 if ( !(i = atoi(optarg)) || (i < 1) || (i > 10000) )
                 {
-                    fprintf(stderr, "WARN: non-supported sleep-AFTER-field ON value (%s)\n", optarg);
+                    WARN("non-supported sleep-AFTER-field ON value (%s)", optarg);
                 }
                 else
                 {
@@ -1142,14 +1151,14 @@ int main(int argc, char* argv[])
                             // BUG: if sector is 0, atoi() returns 0 (ok); if sector is non-numeric, atoi() returns also 0 (not-ok) - cannot differentiate
                             if ( !(sector = atoi(token)) && (token[0] != '0') )
                             {
-                                fprintf(stderr, "WARN: non-numeric sector argument (%s)\n", token);
+                                WARN("non-numeric sector argument (%s)", token);
                                 return 1;
                             }
 
                             // We don't know apriori whether loaded dump or the card on the reader is 1K or 4K, so assume validity for 4K
                             if ( (sector != -1) && !is_valid_sector(MIFARE_CLASSIC_4K, sector) )
                             {
-                                fprintf(stderr, "WARN: invalid sector argument (%d)\n", sector);
+                                WARN("invalid sector argument (%d)", sector);
                                 return 1;
                             }
                             else
@@ -1214,7 +1223,7 @@ int main(int argc, char* argv[])
                             if ( strlen(token) != (MIFARE_CLASSIC_KEY_BYTELENGTH*2) )
                             {
                                 // accept only 12 hex digits (fully qualified) Mifare Classic keys
-                                fprintf(stderr, "WARN: invalid length key argument (%s)\n", token);
+                                WARN("invalid length key argument (%s)", token);
                                 break;
                             }
 
@@ -1223,7 +1232,7 @@ int main(int argc, char* argv[])
                                 if ( !is_hex(token[2 * st]) || !is_hex(token[2 * st + 1]) )
                                 {
                                     // bad input hex string
-                                    fprintf(stderr, "WARN: invalid hex chars in key argument (%s)\n", token);
+                                    WARN("invalid hex chars in key argument (%s)", token);
                                     break;
                                 }
                                 keyOpt[st] = hex2bin(token[2 * st], token[2 * st + 1]);
@@ -1262,7 +1271,7 @@ int main(int argc, char* argv[])
                 {
                     if ( !mfcuk_load_tag_dump(optarg, &(dump_loaded_tag.tag_basic)) )
                     {
-                        fprintf(stderr, "WARN: Unable to load tag dump from '%s'\n", optarg);
+                        WARN("Unable to load tag dump from '%s'", optarg);
                     }
                     else
                     {
@@ -1276,7 +1285,7 @@ int main(int argc, char* argv[])
                 {
                     if ( !mfcuk_load_tag_dump_ext(optarg, &(dump_loaded_tag)) )
                     {
-                        fprintf(stderr, "WARN: Unable to load tag dump from '%s'\n", optarg);
+                        WARN("Unable to load tag dump from '%s'", optarg);
                     }
                     else
                     {
@@ -1319,7 +1328,7 @@ int main(int argc, char* argv[])
                     // strtoul failed somewhere. WTF?! strtoul() is not properly setting errno... errrrrggh!
                     if (errno != 0)
                     {
-                        fprintf(stderr, "WARN: Invalid hex literal %s for option -P\n", optarg);
+                        WARN("Invalid hex literal %s for option -P", optarg);
                     }
                     
                     iter++;
@@ -1328,7 +1337,7 @@ int main(int argc, char* argv[])
                 // if not all arguments were fine, fire warning
                 if ( iter != sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0]) )
                 {
-                    fprintf(stderr, "WARN: Invalid number of hex literal for option -P\n");
+                    WARN("Invalid number of hex literal for option -P");
                 }
                 // otherwise try to recover
                 else
@@ -1364,7 +1373,7 @@ int main(int argc, char* argv[])
             case 'F':
                 if ( !mfcuk_load_tag_dump(optarg, &(finger_tag)) )
                 {
-                    fprintf(stderr, "WARN: Unable to load tag dump from '%s'\n", optarg);
+                    WARN("Unable to load tag dump from '%s'", optarg);
                 }
                 else
                 {
@@ -1401,7 +1410,7 @@ int main(int argc, char* argv[])
             case '?':
             default:
                 // Help screen, on error output
-                fprintf(stderr, "ERROR: Unknown option %c\n\n", ch);
+                ERR("Unknown option %c\n", ch);
                 print_usage(stderr);
                 return 1;
                 break;
@@ -1488,13 +1497,13 @@ int main(int argc, char* argv[])
   
     if (pnd == NULL)
     {
-        fprintf(stderr, "ERROR: connecting to NFC reader\n");
+        ERR("connecting to NFC reader");
         return 1;
     }
     
     if ( !nfc_initiator_init(pnd) )
     {
-        fprintf(stderr, "ERROR: initializing NFC reader: %s\n", pnd->acName);
+        ERR("initializing NFC reader: %s", pnd->acName);
         nfc_disconnect(pnd);
         return 1;
     }
@@ -1504,7 +1513,7 @@ int main(int argc, char* argv[])
     // Select tag and get tag info
     if ( !mfcuk_darkside_select_tag(pnd, iSleepAtFieldOFF, iSleepAfterFieldON, &ti) )
     {
-        fprintf(stderr, "ERROR: selecting tag on the reader %s\n", pnd->acName);
+        ERR("selecting tag on the reader %s", pnd->acName);
         nfc_disconnect(pnd);
         return 1;
     }
@@ -1581,7 +1590,7 @@ int main(int argc, char* argv[])
 
                 if ( !mfcuk_key_arr_to_uint64( &(current_default_keys[j][0]), &crntVerifKey) )
                 {
-                    fprintf(stderr, "WARN: mfcuk_key_arr_to_uint64() failed, verification key will be %012llx\n", crntVerifKey);
+                    WARN("mfcuk_key_arr_to_uint64() failed, verification key will be %012llx", crntVerifKey);
                 }
 
 		/*
@@ -1594,13 +1603,13 @@ int main(int argc, char* argv[])
 
                 if (pnd == NULL)
                 {
-                    fprintf(stderr, "ERROR: connecting to NFC reader\n");
+                    ERR("connecting to NFC reader");
                     return 1;
                 }
 
                 if ( !nfc_initiator_init(pnd) )
                 {
-                    fprintf(stderr, "ERROR: initializing NFC reader: %s\n", pnd->acName);
+                    ERR("initializing NFC reader: %s", pnd->acName);
                     nfc_disconnect(pnd);
                     return 1;
                 }
@@ -1618,7 +1627,7 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    fprintf(stderr, "ERROR: AUTH sector %d, block %d, key %012llx, key-type 0x%02x, error code 0x%02x\n", i, block, crntVerifKey, k, uiErrCode);
+                    ERR("AUTH sector %d, block %d, key %012llx, key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
                 }
 
                 // Reset advanced settings
@@ -1629,12 +1638,12 @@ int main(int argc, char* argv[])
                 
                 if ( !nfc_initiator_select_passive_target(pnd, NM_ISO14443A_106, NULL, 0, &ti) )
                 {
-                    fprintf(stderr, "ERROR: tag was removed or cannot be selected\n");
+                    ERR("tag was removed or cannot be selected");
                 }
 
                 if ( !nfc_initiator_mifare_cmd(pnd, k, block, &mp) )
                 {
-                    fprintf(stderr, "ERROR: AUTH sector %d, block %d, key %012llx, key-type 0x%02x, error code 0x%02x\n", i, block, crntVerifKey, k, uiErrCode);
+                    ERR("AUTH sector %d, block %d, key %012llx, key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
                 }
                 else
                 {
@@ -1692,13 +1701,13 @@ int main(int argc, char* argv[])
 
                 if (pnd == NULL)
                 {
-                    fprintf(stderr, "ERROR: connecting to NFC reader\n");
+                    ERR("connecting to NFC reader");
                     return 1;
                 }
 
                 if ( !nfc_initiator_init(pnd) )
                 {
-                    fprintf(stderr, "ERROR: initializing NFC reader: %s\n", pnd->acName);
+                    ERR("initializing NFC reader: %s", pnd->acName);
                     nfc_disconnect(pnd);
                     return 1;
                 }
@@ -1732,7 +1741,7 @@ int main(int argc, char* argv[])
 
                     if ( uiErrCode != MFCUK_OK_KEY_RECOVERED && uiErrCode != MFCUK_SUCCESS && uiErrCode != MFCUK_FAIL_AUTH)
                     {
-                        fprintf(stderr, "ERROR: mfcuk_key_recovery_block() (error code=0x%02x)\n", uiErrCode);
+                        ERR("mfcuk_key_recovery_block() (error code=0x%02x)", uiErrCode);
                     }
 
                     mfcuk_darkside_reset_advanced(pnd);
@@ -1745,7 +1754,7 @@ int main(int argc, char* argv[])
 
                 if ( !mfcuk_key_uint64_to_arr( &ui64KeyRecovered, (j == keyA)?(&(ptr_trailer->abtKeyA[0])):(&(ptr_trailer->abtKeyB[0])) ) )
                 {
-                    fprintf(stderr, "WARN: mfcuk_key_uint64_to_arr() failed, recovered key should have been %012llx\n", ui64KeyRecovered);
+                    WARN("mfcuk_key_uint64_to_arr() failed, recovered key should have been %012llx", ui64KeyRecovered);
                 }
             }
         } // for (j=keyA; j<=keyB; j++)
@@ -1778,7 +1787,7 @@ int main(int argc, char* argv[])
     {
         if ( !mfcuk_save_tag_dump(strOutputFilename, &(tag_recover_verify.tag_basic)) )
         {
-            fprintf(stderr, "ERROR: could not save tag dump to '%s'\n", strOutputFilename);
+            ERR("could not save tag dump to '%s'", strOutputFilename);
         }
         else
         {
@@ -1792,7 +1801,7 @@ int main(int argc, char* argv[])
     {
         if ( !mfcuk_save_tag_dump_ext(strOutputFilename, &(tag_recover_verify)) )
         {
-            fprintf(stderr, "ERROR: could not save extended tag dump to '%s'\n", strOutputFilename);
+            ERR("could not save extended tag dump to '%s'", strOutputFilename);
         }
         else
         {
