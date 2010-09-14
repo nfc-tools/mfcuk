@@ -2,9 +2,6 @@
  Package:
     MiFare Classic Universal toolKit (MFCUK)
  
- Package version:
-    0.1
- 
  Filename:
     mfcuk_keyrecovery_darkside.h
 
@@ -53,8 +50,6 @@
 #define _MFCUK_KEYRECOVERY_DARKSIDE_H_
 
 // Define package and executable related info
-#define PACKAGE_NAME    "MFCUK - MiFare Classic Universal toolKit"
-#define PACKAGE_VERSION "0.1"
 #define BUILD_NAME      "Mifare Classic DarkSide Key Recovery Tool"
 #define BUILD_VERSION   "0.3"
 #define BUILD_AUTHOR    "Andrei Costin, zveriu@gmail.com, http://andreicostin.com"

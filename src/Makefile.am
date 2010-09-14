@@ -9,7 +9,6 @@ mfcuk_keyrecovery_darkside_SOURCES = 	\
 					mfcuk_mifare.c \
 					mfcuk_utils.c \
 					mifare.c \
-					mirror-subr.c \
 					nfc-utils.c
 
 mfcuk_keyrecovery_darkside_LDADD = -lnfc -lusb -lpcsclite
