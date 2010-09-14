@@ -121,6 +121,12 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef __FreeBSD__
+#  include <sys/endian.h>
+#else
+#  include <endian.h>
+#endif
+
 #ifdef WIN32
     #define NOMINMAX
     #include "windows.h"
@@ -188,7 +194,6 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     uint32_t ks3 = 0;
     struct Crypto1State *pcs;
     uint64_t lfsr;
-    unsigned char* plfsr = (unsigned char*)&lfsr;
     
     // Communication related variables
     byte_t abtAuth[4]        = { 0x00,0x00,0x00,0x00 };
@@ -236,7 +241,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     nfc_configure (pnd, NDO_EASY_FRAMING, true);
 
     // Save the tag nonce (nt)
-    nt = mirror_bytes(abtRx, 4);
+    nt = bswap32(*((uint32_t *) &abtRx));
     nt_orig = nt;
     
     // Init cipher with key
@@ -391,7 +396,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     //print_hex(abtRx,4);
 
     // Save the tag nonce (nt)
-    nt = mirror_bytes(abtRx, 4);
+    nt = bswap32(*((uint32_t *) &abtRx));
 
 	// zveriu
 	//printf("INFO - Nonce distance %d (from 0x%08x, to 0x%08x)\n", nonce_distance(nt, nt_orig), nt, nt_orig);
@@ -906,14 +911,11 @@ int main(int argc, char* argv[])
     nfc_target_info_t ti;
 
     // mifare and crapto related
-    uint32_t uiBlock = 0;//14;
-    uint64_t ui64Key = 0xc1e51c63b8f5;//0xffffffffffff;
     uint32_t uiErrCode = MFCUK_SUCCESS;
     uint64_t ui64KeyRecovered;
     mifare_classic_tag_ext dump_loaded_tag;
     mifare_classic_tag_ext tag_on_reader;
     mifare_classic_tag_ext tag_recover_verify;
-    mifare_key_type bKeyType = keyA;
     
     // fingerprint options related
     mifare_classic_tag finger_tag;
@@ -1078,7 +1080,7 @@ int main(int argc, char* argv[])
 
                 if (st >= MIFARE_CLASSIC_UID_BYTELENGTH)
                 {
-                    tag_recover_verify.uid = mirror_bytes(uidOpt, 4);
+                    tag_recover_verify.uid = bswap32(*((uint32_t *) &uidOpt));
                     memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, uidOpt, MIFARE_CLASSIC_UID_BYTELENGTH );
                     bfOpts[ch] = true;
                 }
@@ -1305,7 +1307,7 @@ int main(int argc, char* argv[])
                     // strtoul failed somewhere. WTF?! strtoul() is not properly setting errno... errrrrggh!
                     if (errno != 0)
                     {
-                        fprintf(stderr, "WARN: Invalid hex literal %s for option -P\n", token);
+                        fprintf(stderr, "WARN: Invalid hex literal %s for option -P\n", optarg);
                     }
                     
                     iter++;
@@ -1314,7 +1316,7 @@ int main(int argc, char* argv[])
                 // if not all arguments were fine, fire warning
                 if ( iter != sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0]) )
                 {
-                    fprintf(stderr, "WARN: Invalid number of hex literal for option -P\n", optarg);
+                    fprintf(stderr, "WARN: Invalid number of hex literal for option -P\n");
                 }
                 // otherwise try to recover
                 else
@@ -1458,7 +1460,7 @@ int main(int argc, char* argv[])
 
             memcpy( ptr_trailer, ptr_trailer_dump, sizeof(*ptr_trailer) );
             tag_recover_verify.type = tag_recover_verify.tag_basic.amb[0].mbm.btUnknown;
-            tag_recover_verify.uid = mirror_bytes(tag_recover_verify.tag_basic.amb[0].mbm.abtUID, 4);
+            tag_recover_verify.uid = bswap32 (*((uint32_t *) &(tag_recover_verify.tag_basic.amb[0].mbm.abtUID)));
         }
     }
     
@@ -1509,13 +1511,13 @@ int main(int argc, char* argv[])
     }
 
     // Tag on the reader UID
-    tag_on_reader.uid = mirror_bytes(ti.nai.abtUid, 4);
+    tag_on_reader.uid = bswap32(*((uint32_t *) &(ti.nai.abtUid)));
     memcpy( tag_on_reader.tag_basic.amb[0].mbm.abtUID, ti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
 
     // No command line tag UID specified, take it from the tag on the reader
     if ( !bfOpts['U'] )
     {
-        tag_recover_verify.uid = mirror_bytes(ti.nai.abtUid, 4);
+        tag_recover_verify.uid = bswap32(*((uint32_t *) &(ti.nai.abtUid)));
         memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, ti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
     }
 
@@ -1536,7 +1538,6 @@ int main(int argc, char* argv[])
         for (i=0; i<max_sectors; i++)
         {
             uint64_t crntVerifKey = 0;
-            uint32_t crntVerifUID = tag_recover_verify.uid;
             byte_t crntVerifTagType = tag_recover_verify.type;
             int crntNumVerifKeys = (bfOpts['D'])?(numDefKeys):(1);
             mifare_param mp;
