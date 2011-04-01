@@ -51,6 +51,8 @@ AC_CHECK_HEADERS([byteswap.h])
 AC_CHECK_HEADERS([endian.h sys/endian.h CoreFoundation/CoreFoundation.h])
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h sys/time.h unistd.h])
 
+AC_DEFINE(_XOPEN_SOURCE, 600, [Enable POSIX extensions if present])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_TYPE_SIZE_T
