@@ -138,6 +138,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 #include <errno.h>
 #include <inttypes.h>
 
@@ -1593,7 +1594,7 @@ int main(int argc, char* argv[])
 
                 if ( !mfcuk_key_arr_to_uint64( &(current_default_keys[j][0]), &crntVerifKey) )
                 {
-                    WARN("mfcuk_key_arr_to_uint64() failed, verification key will be %012llx", crntVerifKey);
+                    WARN("mfcuk_key_arr_to_uint64() failed, verification key will be %012"PRIx64"", crntVerifKey);
                 }
 
 		/*
@@ -1630,7 +1631,7 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    ERR("AUTH sector %d, block %d, key %012llx, key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
+                    ERR("AUTH sector %d, block %d, key %012"PRIx64", key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
                 }
 
                 // Reset advanced settings
@@ -1646,7 +1647,7 @@ int main(int argc, char* argv[])
 
                 if ( !nfc_initiator_mifare_cmd(pnd, k, block, &mp) )
                 {
-                    ERR("AUTH sector %d, block %d, key %012llx, key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
+                    ERR("AUTH sector %d, block %d, key %012"PRIx64", key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
                 }
                 else
                 {
@@ -1757,7 +1758,7 @@ int main(int argc, char* argv[])
 
                 if ( !mfcuk_key_uint64_to_arr( &ui64KeyRecovered, (j == keyA)?(&(ptr_trailer->abtKeyA[0])):(&(ptr_trailer->abtKeyB[0])) ) )
                 {
-                    WARN("mfcuk_key_uint64_to_arr() failed, recovered key should have been %012llx", ui64KeyRecovered);
+                    WARN("mfcuk_key_uint64_to_arr() failed, recovered key should have been %012"PRIx64"", ui64KeyRecovered);
                 }
             }
         } // for (j=keyA; j<=keyB; j++)
