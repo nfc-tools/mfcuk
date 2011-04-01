@@ -66,6 +66,9 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memset strchr])
 
+# Help us to write great code ;-)
+CFLAGS="$CFLAGS -Wall -pedantic -Wextra -std=c99"
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile])
 AC_OUTPUT
