@@ -85,7 +85,7 @@
  
  Requirements:
     crapto1 library 3.1        (http://code.google.com/p/crapto1)
-    libnfc 1.2.1               (http://www.libnfc.org)
+    libnfc 1.4.2               (http://www.libnfc.org)
 
  * @file mfcuk_keyrecovery_darkside.c
  * @brief 
@@ -753,10 +753,7 @@ void print_identification()
     fprintf(stdout, "%s - %s\n", BUILD_NAME, BUILD_VERSION);
     fprintf(stdout, "by %s\n", BUILD_AUTHOR);
     fprintf(stdout, "\n");
-    WARN("Hello world!");
 }
-
-
 
 void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag)
 {
