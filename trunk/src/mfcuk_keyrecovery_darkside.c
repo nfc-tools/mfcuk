@@ -139,6 +139,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #ifdef WIN32
     #define NOMINMAX
@@ -192,6 +193,11 @@ uint32_t numAuthAttempts = 0; // Number of authentication attempts for Recovery 
 bool bfOpts[256] = {false}; // Command line options, indicates their presence, initialize with false
 byte_t verboseLevel = 0; // No verbose level by default
 
+static const nfc_modulation_t nmMifare = {
+  .nmt = NMT_ISO14443A,
+  .nbr = NBR_106,
+};
+
 int compareTagNonces (const void * a, const void * b)
 {
     // TODO: test the improvement (especially corner cases, over/under-flows) "return ( (*(uint32_t*)a) - (*(uint32_t*)b) );
@@ -243,7 +249,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     // Configure the authentication frame using the supplied block
     abtAuth[0] = bKeyType;
     abtAuth[1] = uiBlock;
-    append_iso14443a_crc(abtAuth,2);
+    iso14443a_crc_append(abtAuth,2);
     
     // Now we take over, first we need full control over the CRC
     if ( !nfc_configure(pnd,NDO_HANDLE_CRC,false) )
@@ -397,7 +403,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     // Configure the authentication frame using the supplied block
     abtAuth[0] = bKeyType;
     abtAuth[1] = uiBlock;
-    append_iso14443a_crc(abtAuth,2);
+    iso14443a_crc_append(abtAuth,2);
 
     // Now we take over, first we need full control over the CRC
     nfc_configure(pnd,NDO_HANDLE_CRC,false);
@@ -659,7 +665,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
 
                     if ( bfOpts['v'] && (verboseLevel > 1) )
                     {
-                        printf("\nINFO: block %d recovered KEY: %012llx\n", uiBlock, key_recovered);
+                        printf("\nINFO: block %d recovered KEY: %012"PRIx64"\n", uiBlock, key_recovered);
                     }
 
                     flag_key_recovered = 1;
@@ -842,7 +848,7 @@ bool mfcuk_darkside_reset_advanced(nfc_device_t* pnd)
 
 bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSleepAfterFieldON, nfc_target_info_t* ti)
 {
-    nfc_target_info_t ti_tmp;
+    nfc_target_t ti_tmp;
 
     if ( !pnd || !ti )
     {
@@ -891,7 +897,7 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     sleep(iSleepAfterFieldON);
 
     // Poll for a ISO14443A (MIFARE) tag
-    if (!nfc_initiator_select_passive_target(pnd,NM_ISO14443A_106,NULL,0,&ti_tmp))
+    if (!nfc_initiator_select_passive_target(pnd, nmMifare,NULL,0,&ti_tmp))
     {
         ERR("connecting to MIFARE Classic tag");
         //nfc_disconnect(pnd);
@@ -929,7 +935,7 @@ int main(int argc, char* argv[])
 
     // libnfc related
     nfc_device_t* pnd;
-    nfc_target_info_t ti;
+    nfc_target_t ti;
 
     // mifare and crapto related
     uint32_t uiErrCode = MFCUK_SUCCESS;
@@ -1511,7 +1517,7 @@ int main(int argc, char* argv[])
     printf("\nINFO: Connected to NFC reader: %s\n\n", pnd->acName);
 
     // Select tag and get tag info
-    if ( !mfcuk_darkside_select_tag(pnd, iSleepAtFieldOFF, iSleepAfterFieldON, &ti) )
+    if ( !mfcuk_darkside_select_tag(pnd, iSleepAtFieldOFF, iSleepAfterFieldON, &ti.nti) )
     {
         ERR("selecting tag on the reader %s", pnd->acName);
         nfc_disconnect(pnd);
@@ -1521,25 +1527,25 @@ int main(int argc, char* argv[])
     mfcuk_darkside_reset_advanced(pnd);
 
     // Tag on the reader type
-    tag_on_reader.type = ti.nai.btSak;
-    tag_on_reader.tag_basic.amb[0].mbm.btUnknown = ti.nai.btSak;
+    tag_on_reader.type = ti.nti.nai.btSak;
+    tag_on_reader.tag_basic.amb[0].mbm.btUnknown = ti.nti.nai.btSak;
 
     // No command line tag type specified, take it from the tag on the reader
     if ( !bfOpts['M'] )
     {
-        tag_recover_verify.type = ti.nai.btSak;
-        tag_recover_verify.tag_basic.amb[0].mbm.btUnknown = ti.nai.btSak;
+        tag_recover_verify.type = ti.nti.nai.btSak;
+        tag_recover_verify.tag_basic.amb[0].mbm.btUnknown = ti.nti.nai.btSak;
     }
 
     // Tag on the reader UID
-    tag_on_reader.uid = bswap_32(*((uint32_t *) &(ti.nai.abtUid)));
-    memcpy( tag_on_reader.tag_basic.amb[0].mbm.abtUID, ti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
+    tag_on_reader.uid = bswap_32(*((uint32_t *) &(ti.nti.nai.abtUid)));
+    memcpy( tag_on_reader.tag_basic.amb[0].mbm.abtUID, ti.nti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
 
     // No command line tag UID specified, take it from the tag on the reader
     if ( !bfOpts['U'] )
     {
-        tag_recover_verify.uid = bswap_32(*((uint32_t *) &(ti.nai.abtUid)));
-        memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, ti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
+        tag_recover_verify.uid = bswap_32(*((uint32_t *) &(ti.nti.nai.abtUid)));
+        memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, ti.nti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
     }
 
     if (bfOpts['v'] && (verboseLevel > 0))
@@ -1636,7 +1642,7 @@ int main(int argc, char* argv[])
                 memcpy(mp.mpa.abtUid, tag_recover_verify.tag_basic.amb[0].mbm.abtUID, MIFARE_CLASSIC_UID_BYTELENGTH);
                 memcpy(mp.mpa.abtKey, &(current_default_keys[j][0]), MIFARE_CLASSIC_KEY_BYTELENGTH);
                 
-                if ( !nfc_initiator_select_passive_target(pnd, NM_ISO14443A_106, NULL, 0, &ti) )
+                if ( !nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti) )
                 {
                     ERR("tag was removed or cannot be selected");
                 }
@@ -1721,7 +1727,7 @@ int main(int argc, char* argv[])
                 // Recovery loop for current key-type of current sector
                 do
                 {
-                    mfcuk_darkside_select_tag(pnd, iSleepAtFieldOFF, iSleepAfterFieldON, &ti);
+                    mfcuk_darkside_select_tag(pnd, iSleepAtFieldOFF, iSleepAfterFieldON, &ti.nti);
 
                     // Print usefull/useless info (sort-of "Let me entertain you!")
                     if ( bfOpts['v'] && (verboseLevel > 2) )
@@ -1730,7 +1736,7 @@ int main(int argc, char* argv[])
                         printf("Let me entertain you!\n");
                         printf("    uid: %08x\n", tag_recover_verify.uid);
                         printf("   type: %02x\n", tag_recover_verify.type);
-                        printf("    key: %012llx\n", crntRecovKey);
+                        printf("    key: %012"PRIx64"\n", crntRecovKey);
                         printf("  block: %02x\n", block);
                         printf("diff Nt: %d\n", numSpoofEntries);
                         printf("  auths: %d\n", numAuthAttempts);
