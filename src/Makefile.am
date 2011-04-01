@@ -1,5 +1,15 @@
 bin_PROGRAMS = mfcuk_keyrecovery_darkside
 
+noinst_HEADERS = \
+		 crapto1.h \
+		 mfcuk_finger.h \
+		 mfcuk_keyrecovery_darkside.h \
+		 mfcuk_mifare.h \
+		 mfcuk_utils.h \
+		 mifare.h \
+		 nfc-utils.h \
+		 xgetopt.h
+
 # set the include path found by configure
 mfcuk_keyrecovery_darkside_SOURCES = 	\
 					crapto1.c \
