@@ -210,8 +210,7 @@ nfc_device_desc_t* parse_device_desc(int argc, const char *argv[], size_t* szFou
         strcpy(pndd->pcDriver, strtok(buffer, ":"));
 
         // Port.
-        pndd->pcPort = (char *)malloc(256);
-        strcpy(pndd->pcPort, strtok(NULL, ":"));
+        strcpy(pndd->acPort, strtok(NULL, ":"));
 
         // Speed.
         sscanf(strtok(NULL, ":"), "%u", &pndd->uiSpeed);
