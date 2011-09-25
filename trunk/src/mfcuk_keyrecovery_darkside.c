@@ -719,9 +719,8 @@ TODO:
 -m max_iterations - stop everything after so many iterations, default is infinite until all keys found
 -T max_elapsed_time - stop after time elapsed
 */
-void print_usage(FILE *fp)
+void print_usage(FILE *fp, const char * prog_name)
 {
-    fprintf(fp, "\n");
     fprintf(fp, "Usage:\n");
     fprintf(fp, "-C - require explicit connection to the reader. Without this option, the connection is not made and recovery will not occur\n");
     fprintf(fp, "-i mifare.dmp - load input mifare_classic_tag type dump\n");
@@ -745,6 +744,10 @@ void print_usage(FILE *fp)
     fprintf(fp, "-p proxmark3_full.log - tries to parse the log file on it's own (mifarecrack.py based), get the values for option -P and invoke it\n");
     fprintf(fp, "-F - tries to fingerprint the input dump (-i) against known cards' data format\n");
     fprintf(fp, "\n");
+
+    fprintf(fp, "Usage examples:\n");
+    fprintf(fp, "  Recove all keys from all sectors:\n");
+    fprintf(fp, "    %s -C -R -1\n", prog_name);
     return;
 }
 
@@ -995,13 +998,19 @@ int main(int argc, char* argv[])
 
     if (argc < 2)
     {
-        print_usage(stdout);
+        print_usage(stdout, argv[0]);
         return 1;
     }
     
     // Load fingerprinting "database"
     mfcuk_finger_load();
-
+/*
+    if (mfcuk_finger_load() == 0)
+    {
+        ERR ("Unable to load any fingerprinting database.");
+        exit (EXIT_FAILURE);
+    }
+*/
     // OPTION PROCESSING BLOCK
     // TODO: for WIN32 figure out how to use unistd/posix-compatible Gnu.Getopt.dll (http://getopt.codeplex.com)
     // For WIN32 using VERY limited (modified) Xgetopt (http://www.codeproject.com/KB/cpp/xgetopt.aspx)
@@ -1408,14 +1417,14 @@ int main(int argc, char* argv[])
                 break;
             case 'h':
                 // Help screen
-                print_usage(stdout);
+                print_usage(stdout, argv[0]);
                 return 0;
                 break;
             case '?':
             default:
                 // Help screen, on error output
                 ERR("Unknown option %c\n", ch);
-                print_usage(stderr);
+                print_usage(stderr, argv[0]);
                 return 1;
                 break;
         }
