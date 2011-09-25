@@ -29,7 +29,7 @@ fi
 AC_PATH_PROG(PKG_CONFIG, pkg-config, [AC_MSG_WARN([pkg-config not found.])])
 if test x"$WITH_NFC" = "x0"; then
   if test x"$PKG_CONFIG" != "x"; then
-    LIBNFC_REQUIRED_VERSION=1.4.2
+    LIBNFC_REQUIRED_VERSION=1.5.0
     PKG_CHECK_MODULES([LIBNFC], [libnfc >= $LIBNFC_REQUIRED_VERSION], [WITH_NFC=1], [WITH_NFC=0])
   fi
 fi
