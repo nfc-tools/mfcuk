@@ -262,7 +262,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     nfc_configure (pnd, NDO_EASY_FRAMING, false);
 
     // Request plain tag-nonce
-    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx))
+    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx, NULL))
     {
         return MFCUK_FAIL_COMM;
     }
@@ -414,7 +414,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
 
     // Request plain tag-nonce
     //printf("Nt: ");
-    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx))
+    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx, NULL))
     {
         //printf("\n\nFAILURE - Failed to get TAG NONCE!!!\n\n");
         return MFCUK_FAIL_COMM;
