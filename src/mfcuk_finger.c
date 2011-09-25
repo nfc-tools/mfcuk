@@ -145,7 +145,8 @@ int mfcuk_finger_load()
     FILE *fp = NULL;
     size_t result = 0;
     mfcuk_finger_template *tmpl_new = NULL;
-    
+
+    int template_loaded_count = 0;
     for (i = 0; i<mfcuk_finger_db_entries; i++)
     {
         fp = fopen(mfcuk_finger_db[i].tmpl_filename, "rb");
@@ -171,13 +172,13 @@ int mfcuk_finger_load()
             fclose(fp);
             continue;
         }
+        fclose(fp);
         
         if (mfcuk_finger_db[i].tmpl_data == NULL)
         {
             if ( (tmpl_new = (mfcuk_finger_template *) malloc(sizeof(mfcuk_finger_template))) == NULL)
             {
                 fprintf(stderr, "WARN: cannot allocate memory to template record %d\n", i);
-                fclose(fp);
                 continue;
             }
             
@@ -185,12 +186,12 @@ int mfcuk_finger_load()
             memcpy( &(tmpl_new->values), &(values), sizeof(values));
             
             mfcuk_finger_db[i].tmpl_data = tmpl_new;
+            template_loaded_count++;
         }
     }
     
-    fclose(fp);
     
-    return 1;
+    return template_loaded_count;
 }
 
 int mfcuk_finger_unload()
