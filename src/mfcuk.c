@@ -132,7 +132,31 @@
 #endif
 
 #if defined(HAVE_BYTESWAP_H)
-#  include <byteswap.h>
+
+#include <byteswap.h>
+
+#elif __GNUC__ * 100 + __GNUC_MINOR__ >= 430
+
+#warning "NO byteswap.h found! But since GCC >= 4.30, using __builtin_bswapXX() alternatives..."
+#define bswap_16 __builtin_bswap16
+#define bswap_32 __builtin_bswap32
+#define bswap_64 __builtin_bswap64
+
+#else
+
+#warning "NO byteswap.h found! Using untested alternatives..."
+
+static inline unsigned short bswap_16(unsigned short x) {
+  return (x>>8) | (x<<8);
+}
+
+static inline unsigned int bswap_32(unsigned int x) {
+  return (bswap_16(x&0xffff)<<16) | (bswap_16(x>>16));
+}
+
+static inline unsigned long long bswap_64(unsigned long long x) {
+  return (((unsigned long long)bswap_32(x&0xffffffffull))<<32) | (bswap_32(x>>32));
+}
 #endif
 
 #include <stdio.h>
@@ -171,7 +195,7 @@
 #include "mfcuk_mifare.h"
 #include "mfcuk_utils.h"
 #include "mfcuk_finger.h"
-#include "mfcuk_keyrecovery_darkside.h"
+#include "mfcuk.h"
 
 #define MAX_FRAME_LEN       264
 
@@ -1293,7 +1317,7 @@ int main(int argc, char* argv[])
                 }
                 break;
             case 'I':
-                // // Input extended dump file of type mifare_classic_tag_ext, Options i and I are autoexclusive
+                // Input extended dump file of type mifare_classic_tag_ext, Options i and I are autoexclusive
                 if (!bfOpts['i'] && !bfOpts['I'])
                 {
                     if ( !mfcuk_load_tag_dump_ext(optarg, &(dump_loaded_tag)) )
@@ -1308,7 +1332,7 @@ int main(int argc, char* argv[])
                 break;
             case 'o':
             case 'O':
-                // // Output simple/extended dump file, Options o and O are autoexclusive
+                // Output simple/extended dump file, Options o and O are autoexclusive
                 if (!bfOpts['o'] && !bfOpts['O'])
                 {
                     strncpy( strOutputFilename, optarg, sizeof(strOutputFilename) );

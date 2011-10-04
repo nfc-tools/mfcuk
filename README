@@ -1,6 +1,15 @@
 README
 ======
 
+Compiling:
+    automake
+    autoconf
+    ./configure
+    make
+
+Running (most basic):
+    ./mfcuk -C -R 0:A -v 2
+
 PACKAGE
 -------
 MiFare Classic Universal toolKit (MFCUK)

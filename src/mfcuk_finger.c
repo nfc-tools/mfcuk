@@ -42,7 +42,7 @@ mfcuk_finger_tmpl_entry mfcuk_finger_db[] =
 {
     { "./data/tmpls_fingerprints/mfcuk_tmpl_skgt.mfd", "Sofia SKGT", mfcuk_finger_default_comparator, mfcuk_finger_skgt_decoder, NULL },
     { "./data/tmpls_fingerprints/mfcuk_tmpl_ratb.mfd", "Bucharest RATB", mfcuk_finger_default_comparator, mfcuk_finger_default_decoder, NULL },
-    { "./data/tmpls_fingerprints/mfcuk_tmpl_oyster.mfd", "London OYSTER", mfcuk_finger_default_comparator, mfcuk_finger_default_decoder, NULL }
+    { "./data/tmpls_fingerprints/mfcuk_tmpl_oyster.mfd", "London OYSTER", mfcuk_finger_default_comparator, mfcuk_finger_default_decoder, NULL },
 };
 
 int mfcuk_finger_db_entries = sizeof(mfcuk_finger_db)/sizeof(mfcuk_finger_db[0]);
@@ -172,13 +172,13 @@ int mfcuk_finger_load()
             fclose(fp);
             continue;
         }
-        fclose(fp);
         
         if (mfcuk_finger_db[i].tmpl_data == NULL)
         {
             if ( (tmpl_new = (mfcuk_finger_template *) malloc(sizeof(mfcuk_finger_template))) == NULL)
             {
                 fprintf(stderr, "WARN: cannot allocate memory to template record %d\n", i);
+                fclose(fp);
                 continue;
             }
             
@@ -188,8 +188,13 @@ int mfcuk_finger_load()
             mfcuk_finger_db[i].tmpl_data = tmpl_new;
             template_loaded_count++;
         }
+        
+        if (fp)
+        {
+            fclose(fp);
+            fp = NULL;
+        }
     }
-    
     
     return template_loaded_count;
 }
