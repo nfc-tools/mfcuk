@@ -57,7 +57,7 @@ static void quicksort(uint32_t* const start, uint32_t* const stop)
 /** binsearch
  * Binary search for the first occurence of *stop's MSB in sorted [start,stop]
  */
-static /*inline*/ uint32_t*
+static inline uint32_t*
 binsearch(uint32_t *start, uint32_t *stop)
 {
 	uint32_t mid, val = *stop & 0xff000000;
@@ -73,7 +73,7 @@ binsearch(uint32_t *start, uint32_t *stop)
 /** update_contribution
  * helper, calculates the partial linear feedback contributions and puts in MSB
  */
-static /*inline*/ void
+static inline void
 update_contribution(uint32_t *item, const uint32_t mask1, const uint32_t mask2)
 {
 	uint32_t p = *item >> 25;
@@ -86,7 +86,7 @@ update_contribution(uint32_t *item, const uint32_t mask1, const uint32_t mask2)
 /** extend_table
  * using a bit of the keystream extend the table of possible lfsr states
  */
-static /*inline*/ void
+static inline void
 extend_table(uint32_t *tbl, uint32_t **end, int bit, int m1, int m2, uint32_t in)
 {
 	in <<= 24;
@@ -108,7 +108,7 @@ extend_table(uint32_t *tbl, uint32_t **end, int bit, int m1, int m2, uint32_t in
 /** extend_table_simple
  * using a bit of the keystream extend the table of possible lfsr states
  */
-static /*inline*/ void
+static inline void
 extend_table_simple(uint32_t *tbl, uint32_t **end, int bit)
 {
 	for(*tbl <<= 1; tbl <= *end; *++tbl <<= 1)

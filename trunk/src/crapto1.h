@@ -15,7 +15,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
     MA  02110-1301, US$
 
-    Copyright (C) 2008-2008 bla <blapost@gmail.com>
+    Copyright (C) 2008-2009 bla <blapost@gmail.com>
 */
 #ifndef CRAPTO1_INCLUDED
 #define CRAPTO1_INCLUDED
@@ -35,12 +35,8 @@ uint32_t prng_successor(uint32_t x, uint32_t n);
 
 struct Crypto1State* lfsr_recovery32(uint32_t ks2, uint32_t in);
 struct Crypto1State* lfsr_recovery64(uint32_t ks2, uint32_t ks3);
-uint32_t *lfsr_prefix_ks(uint8_t ks[8], int isodd);
-struct Crypto1State* lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]);
 
-uint8_t lfsr_rollback_bit(struct Crypto1State* s, uint32_t in, int fb);
-uint8_t lfsr_rollback_byte(struct Crypto1State* s, uint32_t in, int fb);
-uint32_t lfsr_rollback_word(struct Crypto1State* s, uint32_t in, int fb);
+void lfsr_rollback(struct Crypto1State* s, uint32_t in, int fb);
 int nonce_distance(uint32_t from, uint32_t to);
 #define FOREACH_VALID_NONCE(N, FILTER, FSIZE)\
 	uint32_t __n = 0,__M = 0, N = 0;\
@@ -57,7 +53,7 @@ int nonce_distance(uint32_t from, uint32_t to);
 #define LF_POLY_EVEN (0x870804)
 #define BIT(x, n) ((x) >> (n) & 1)
 #define BEBIT(x, n) BIT(x, (n) ^ 24)
-static /*inline*/ int parity(uint32_t x)
+static inline int parity(uint32_t x)
 {
 #if !defined __i386__ || !defined __GNUC__
 	x ^= x >> 16;
@@ -65,17 +61,17 @@ static /*inline*/ int parity(uint32_t x)
 	x ^= x >> 4;
 	return BIT(0x6996, x & 0xf);
 #else
-        asm(    "movl %1, %%eax\n"
+	asm(    "movl %1, %%eax\n"
 		"mov %%ax, %%cx\n"
 		"shrl $0x10, %%eax\n"
 		"xor %%ax, %%cx\n"
-                "xor %%ch, %%cl\n"
-                "setpo %%al\n"
-                "movzx %%al, %0\n": "=r"(x) : "r"(x): "eax","ecx");
+		"xor %%ch, %%cl\n"
+		"setpo %%al\n"
+		"movzx %%al, %0\n": "=r"(x) : "r"(x): "eax","ecx");
 	return x;
 #endif
 }
-static /*inline*/ int filter(uint32_t const x)
+static inline int filter(uint32_t const x)
 {
 	uint32_t f;
 
