@@ -36,6 +36,8 @@ AC_CHECK_FUNCS([memset strchr])
 AC_CHECK_HEADERS([endian.h sys/endian.h CoreFoundation/CoreFoundation.h])
 AC_CHECK_HEADERS([byteswap.h])
 
+AC_DEFINE([_XOPEN_SOURCE], [600], [Define to 500 if Single Unix conformance is wanted, 600 for sixth revision.])
+
 # Help us to write great code ;-)
 CFLAGS="$CFLAGS -Wall -pedantic -Wextra -std=c99"
 
