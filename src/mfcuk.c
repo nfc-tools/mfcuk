@@ -87,8 +87,7 @@
     crapto1 library 3.1        (http://code.google.com/p/crapto1)
     libnfc 1.4.2               (http://www.libnfc.org)
 
- * @file mfcuk_keyrecovery_darkside.c
- * @brief
+ * @file mfcuk.c
 */
 
 /*
@@ -115,6 +114,10 @@
 
 #include "config.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <inttypes.h>
+
 #if defined(HAVE_SYS_TYPES_H)
 #  include <sys/types.h>
 #endif
@@ -132,39 +135,41 @@
 #endif
 
 #if defined(HAVE_BYTESWAP_H)
-
-#include <byteswap.h>
-
-#elif __GNUC__ * 100 + __GNUC_MINOR__ >= 430
-
-#warning "NO byteswap.h found! But since GCC >= 4.30, using __builtin_bswapXX() alternatives..."
-#define bswap_16 __builtin_bswap16
-#define bswap_32 __builtin_bswap32
-#define bswap_64 __builtin_bswap64
-
-#else
-
-#warning "NO byteswap.h found! Using untested alternatives..."
-
-static inline unsigned short bswap_16(unsigned short x) {
-  return (x>>8) | (x<<8);
-}
-
-static inline unsigned int bswap_32(unsigned int x) {
-  return (bswap_16(x&0xffff)<<16) | (bswap_16(x>>16));
-}
-
-static inline unsigned long long bswap_64(unsigned long long x) {
-  return (((unsigned long long)bswap_32(x&0xffffffffull))<<32) | (bswap_32(x>>32));
-}
+#  include <byteswap.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#if defined (__GNUC__)
+#  define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__ * 10)
+#  if GCC_VERSION >= 430
+// Since GCC >= 4.30, GCC provides __builtin_bswapXX() alternatives so we switch to them
+#  undef bswap_16
+#  define bswap_16 __builtin_bswap16
+#  undef bswap_32
+#  define bswap_32 __builtin_bswap32
+#  undef bswap_64
+#  define bswap_64 __builtin_bswap64
+#endif
+
+// Fallback...
+#if !defined (bswap_16) || !defined (bswap_32) || !defined (bswap_64)
+#  warning "No bswap function found! Using untested alternatives..."
+  static inline uint16_t bswap_16(uint16_t x) {
+    return (x>>8) | (x<<8);
+  }
+  
+  static inline uint32_t bswap_32(uint32_t x) {
+    return (bswap_16(x&0xffff)<<16) | (bswap_16(x>>16));
+  }
+  
+  static inline uint64_t bswap_64(uint64_t x) {
+    return (((uint64_t)bswap_32(x&0xffffffffull))<<32) | (bswap_32(x>>32));
+  }
+#endif
+
+
 #include <string.h>
 #include <err.h>
 #include <errno.h>
-#include <inttypes.h>
 
 #ifdef WIN32
     #define NOMINMAX
@@ -293,7 +298,7 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     nfc_configure (pnd, NDO_EASY_FRAMING, true);
 
     // Save the tag nonce (nt)
-    nt = bswap_32(*((uint32_t *) &abtRx));
+    nt = bswap_32(*((uint32_t *) abtRx));
     nt_orig = nt;
 
     // Init cipher with key

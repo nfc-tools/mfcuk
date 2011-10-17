@@ -32,6 +32,10 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memset strchr])
 
+# Checks for endianness convertion
+AC_CHECK_HEADERS([endian.h sys/endian.h CoreFoundation/CoreFoundation.h])
+AC_CHECK_HEADERS([byteswap.h])
+
 # Help us to write great code ;-)
 CFLAGS="$CFLAGS -Wall -pedantic -Wextra -std=c99"
 
