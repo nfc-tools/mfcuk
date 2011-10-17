@@ -1,0 +1,9 @@
+Until I fix the AM/AC configs/scripts, here is what makes it compile:
+
+automake
+autoreconf
+automake --add-missing
+autoreconf
+automake
+./configure
+make
