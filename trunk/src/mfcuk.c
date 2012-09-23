@@ -773,11 +773,15 @@ void print_usage(FILE *fp, const char * prog_name)
     fprintf(fp, "\tExample -P 0x5c72325e:0x50829cd6:0xb8671f76:0xe00eefc9:0x4888964f would find key FFFFFFFFFFFF\n");
     fprintf(fp, "-p proxmark3_full.log - tries to parse the log file on it's own (mifarecrack.py based), get the values for option -P and invoke it\n");
     fprintf(fp, "-F - tries to fingerprint the input dump (-i) against known cards' data format\n");
+    fprintf(fp, "-v verbose_level - verbose level (default is O)\n");
     fprintf(fp, "\n");
 
     fprintf(fp, "Usage examples:\n");
     fprintf(fp, "  Recove all keys from all sectors:\n");
     fprintf(fp, "    %s -C -R -1\n", prog_name);
+
+    fprintf(fp, "  Recove the sector #0 key with 250 ms for all delays (delays could give more results): \n");
+    fprintf(fp, "    %s -C -R 0 -s 250 -S 250\n", prog_name);
     return;
 }
 
