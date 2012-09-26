@@ -70,7 +70,7 @@ int mfcuk_finger_default_decoder(mifare_classic_tag *dump);
 int mfcuk_finger_skgt_decoder(mifare_classic_tag *dump);
 
 // "Housekeeping" functions
-int mfcuk_finger_load();
-int mfcuk_finger_unload();
+int mfcuk_finger_load(void);
+int mfcuk_finger_unload(void);
 
 #endif
