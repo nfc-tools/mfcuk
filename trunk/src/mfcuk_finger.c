@@ -64,16 +64,11 @@ int mfcuk_finger_default_decoder(mifare_classic_tag *dump)
 // Yes, I know C++ class inheritance would perfectly fit the decoders/comparators... Though C is more to my heart. Anyone to rewrite in C++?
 int mfcuk_finger_skgt_decoder(mifare_classic_tag *dump)
 {
-    unsigned char *dump_ptr = NULL;
-    unsigned short car_number = 0;
-    
     if (!dump)
     {
         fprintf(stderr, "ERROR: cannot decode a NULL pointer :)\n");
         return 0;
     }
-    
-    dump_ptr = (unsigned char *) dump;
     
     printf("Bulgaria/Sofia/SKGT public transport card information decoder (info credits to Andy)\n");
     mfcuk_finger_default_decoder(dump);
