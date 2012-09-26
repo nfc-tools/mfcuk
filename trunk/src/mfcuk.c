@@ -187,10 +187,6 @@
 
 // Crapto1
 #include "crapto1.h"
-    // FIXME: For some reason (reason=I am dumb perhaps), these two prototypes are not visible form crapto1.h, so I put them here
-    struct Crypto1State* lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]);
-    uint32_t lfsr_rollback_word(struct Crypto1State* s, uint32_t in, int fb);
-    // :FIXME
 
 // imported from libnfc's examples
 #include "mifare.h"
