@@ -321,7 +321,7 @@ void test_mifare_classic_blocks_sectors_functions(uint8_t bTagType)
 
 }
 
-bool mfcuk_save_tag_dump(char *filename, mifare_classic_tag *tag)
+bool mfcuk_save_tag_dump(const char *filename, mifare_classic_tag *tag)
 {
     FILE *fp;
     size_t result;
@@ -346,7 +346,7 @@ bool mfcuk_save_tag_dump(char *filename, mifare_classic_tag *tag)
     return true;
 }
 
-bool mfcuk_save_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext)
+bool mfcuk_save_tag_dump_ext(const char *filename, mifare_classic_tag_ext *tag_ext)
 {
     FILE *fp;
     size_t result;
@@ -371,7 +371,7 @@ bool mfcuk_save_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext)
     return true;
 }
 
-bool mfcuk_load_tag_dump(char *filename, mifare_classic_tag *tag)
+bool mfcuk_load_tag_dump(const char *filename, mifare_classic_tag *tag)
 {
     FILE *fp;
     size_t result;
@@ -396,7 +396,7 @@ bool mfcuk_load_tag_dump(char *filename, mifare_classic_tag *tag)
     return true;
 }
 
-bool mfcuk_load_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext)
+bool mfcuk_load_tag_dump_ext(const char *filename, mifare_classic_tag_ext *tag_ext)
 {
     FILE *fp;
     size_t result;
