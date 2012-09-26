@@ -768,8 +768,8 @@ void print_usage(FILE *fp, const char * prog_name)
     fprintf(fp, "-M tagtype - force specific tagtype. 8 is 1K, 24 is 4K, 32 is DESFire\n");
     fprintf(fp, "-D - for sectors and key-types marked for verification, in first place use default keys to verify (maybe you are lucky)\n");
     fprintf(fp, "-d key - specifies additional full 12 hex-digits default key to be checked. Multiple -d options can be used for more additional keys\n");
-    fprintf(fp, "-s - miliseconds to sleep for DROP FIELD\n");
-    fprintf(fp, "-S - miliseconds to sleep for CONSTANT DELAY\n");
+    fprintf(fp, "-s - milliseconds to sleep for SLEEP_AT_FIELD_OFF (Default: %d ms)\n", SLEEP_AT_FIELD_OFF);
+    fprintf(fp, "-S - milliseconds to sleep for SLEEP_AFTER_FIELD_ON (Default: %d ms)\n", SLEEP_AFTER_FIELD_ON);
     fprintf(fp, "-P hex_literals_separated - try to recover the key from a conversation sniffed with Proxmark3 (mifarecrack.c based). Accepts several options:\n");
     fprintf(fp, "\tConcatenated string in hex literal format of form uid:tag_chal:nr_enc:reader_resp:tag_resp\n");
     fprintf(fp, "\tExample -P 0x5c72325e:0x50829cd6:0xb8671f76:0xe00eefc9:0x4888964f would find key FFFFFFFFFFFF\n");
