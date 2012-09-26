@@ -1433,10 +1433,8 @@ int main(int argc, char* argv[])
                                 pm3_log_multisect_verified[i] = pm3_log_multisect_decrypted[i];
                             }
 
-                            if (   (pm3_log_multisect_decrypted[0] == MC_AUTH_A || pm3_log_multisect_decrypted[0] == MC_AUTH_B)
-                                   // TODO: This "<= MIFARE_CLASSIC_4K_MAX_BLOCKS" should be properly checked against either MIFARE_CLASSIC_1K_MAX_BLOCKS or MIFARE_CLASSIC_4K_MAX_BLOCKS (depending on card type detected)
-                                && (pm3_log_multisect_decrypted[1] >= 0x00 && pm3_log_multisect_decrypted[1] <= MIFARE_CLASSIC_4K_MAX_BLOCKS)
-                               )
+                            // TODO: This "<= MIFARE_CLASSIC_4K_MAX_BLOCKS" should be properly checked against either MIFARE_CLASSIC_1K_MAX_BLOCKS or MIFARE_CLASSIC_4K_MAX_BLOCKS (depending on card type detected)
+                            if ((pm3_log_multisect_decrypted[0] == MC_AUTH_A) || (pm3_log_multisect_decrypted[0] == MC_AUTH_B))
                             {
                                 iso14443a_crc_append(pm3_log_multisect_verified, 2);
                                 int multisect_auth_verified = 1;
