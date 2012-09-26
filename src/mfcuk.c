@@ -791,7 +791,7 @@ void print_usage(FILE *fp, const char * prog_name)
     return;
 }
 
-void print_identification()
+void print_identification(void)
 {
     fprintf(stdout, "%s - %s\n", PACKAGE_NAME, PACKAGE_VERSION);
     fprintf(stdout, "%s - %s\n", BUILD_NAME, BUILD_VERSION);

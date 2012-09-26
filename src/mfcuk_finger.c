@@ -132,7 +132,7 @@ int mfcuk_finger_default_comparator(mifare_classic_tag *dump, mfcuk_finger_templ
     return 1;
 }
 
-int mfcuk_finger_load()
+int mfcuk_finger_load(void)
 {
     int i;
     mifare_classic_tag mask;
@@ -194,7 +194,7 @@ int mfcuk_finger_load()
     return template_loaded_count;
 }
 
-int mfcuk_finger_unload()
+int mfcuk_finger_unload(void)
 {
     int i;
     
