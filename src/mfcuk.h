@@ -94,8 +94,8 @@
 
 typedef struct tag_nonce_entry
 {
-	uint32_t tagNonce; // Tag nonce we target for fixation
-    byte_t spoofFlag; // No spoofing until we have a successful auth with this tagNonce. Once we have, we want to spoof to get the encrypted 0x5 value
+    uint32_t tagNonce; // Tag nonce we target for fixation
+    uint8_t spoofFlag; // No spoofing until we have a successful auth with this tagNonce. Once we have, we want to spoof to get the encrypted 0x5 value
     uint32_t num_of_appearances; // For statistics, how many times this tag nonce appeared for the given SLEEP_ values
 
     // STAGE1 data for "dark side" and lsfr_common_prefix()

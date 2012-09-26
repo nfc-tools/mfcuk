@@ -53,7 +53,7 @@
 #include "mfcuk_mifare.h"
 
 // Default keys used as a *BIG* mistake in many applications - especially System Integrators should pay attention!
-byte_t mfcuk_default_keys[][MIFARE_CLASSIC_KEY_BYTELENGTH] =
+uint8_t mfcuk_default_keys[][MIFARE_CLASSIC_KEY_BYTELENGTH] =
 {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // Place-holder for current key to verify
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
@@ -68,7 +68,7 @@ byte_t mfcuk_default_keys[][MIFARE_CLASSIC_KEY_BYTELENGTH] =
 
 int mfcuk_default_keys_num = sizeof(mfcuk_default_keys)/sizeof(mfcuk_default_keys[0]);
 
-bool is_valid_block(byte_t bTagType, uint32_t uiBlock)
+bool is_valid_block(uint8_t bTagType, uint32_t uiBlock)
 {
     if ( IS_MIFARE_CLASSIC_1K(bTagType) && (uiBlock < MIFARE_CLASSIC_1K_MAX_BLOCKS) )
     {
@@ -83,7 +83,7 @@ bool is_valid_block(byte_t bTagType, uint32_t uiBlock)
     return false;
 }
 
-bool is_valid_sector(byte_t bTagType, uint32_t uiSector)
+bool is_valid_sector(uint8_t bTagType, uint32_t uiSector)
 {
     if ( IS_MIFARE_CLASSIC_1K(bTagType) && (uiSector < MIFARE_CLASSIC_1K_MAX_SECTORS) )
     {
@@ -98,7 +98,7 @@ bool is_valid_sector(byte_t bTagType, uint32_t uiSector)
     return false;
 }
 
-bool is_first_block(byte_t bTagType, uint32_t uiBlock)
+bool is_first_block(uint8_t bTagType, uint32_t uiBlock)
 {
     if ( !is_valid_block(bTagType, uiBlock) )
     {
@@ -121,7 +121,7 @@ bool is_first_block(byte_t bTagType, uint32_t uiBlock)
     return false;
 }
 
-bool is_trailer_block(byte_t bTagType, uint32_t uiBlock)
+bool is_trailer_block(uint8_t bTagType, uint32_t uiBlock)
 {
     if ( !is_valid_block(bTagType, uiBlock) )
     {
@@ -144,7 +144,7 @@ bool is_trailer_block(byte_t bTagType, uint32_t uiBlock)
     return false;
 }
 
-uint32_t get_first_block(byte_t bTagType, uint32_t uiBlock)
+uint32_t get_first_block(uint8_t bTagType, uint32_t uiBlock)
 {
     if ( !is_valid_block(bTagType, uiBlock) )
     {
@@ -167,7 +167,7 @@ uint32_t get_first_block(byte_t bTagType, uint32_t uiBlock)
     return MIFARE_CLASSIC_INVALID_BLOCK;
 }
 
-uint32_t get_trailer_block(byte_t bTagType, uint32_t uiBlock)
+uint32_t get_trailer_block(uint8_t bTagType, uint32_t uiBlock)
 {
     if ( !is_valid_block(bTagType, uiBlock) )
     {
@@ -190,7 +190,7 @@ uint32_t get_trailer_block(byte_t bTagType, uint32_t uiBlock)
     return MIFARE_CLASSIC_INVALID_BLOCK;
 }
 
-bool is_big_sector(byte_t bTagType, uint32_t uiSector)
+bool is_big_sector(uint8_t bTagType, uint32_t uiSector)
 {
     if ( !is_valid_sector(bTagType, uiSector) )
     {
@@ -205,7 +205,7 @@ bool is_big_sector(byte_t bTagType, uint32_t uiSector)
     return false;
 }
 
-uint32_t get_first_block_for_sector(byte_t bTagType, uint32_t uiSector)
+uint32_t get_first_block_for_sector(uint8_t bTagType, uint32_t uiSector)
 {
     if ( !is_valid_sector(bTagType, uiSector) )
     {
@@ -228,7 +228,7 @@ uint32_t get_first_block_for_sector(byte_t bTagType, uint32_t uiSector)
     return MIFARE_CLASSIC_INVALID_BLOCK;
 }
 
-uint32_t get_trailer_block_for_sector(byte_t bTagType, uint32_t uiSector)
+uint32_t get_trailer_block_for_sector(uint8_t bTagType, uint32_t uiSector)
 {
     if ( !is_valid_sector(bTagType, uiSector) )
     {
@@ -251,7 +251,7 @@ uint32_t get_trailer_block_for_sector(byte_t bTagType, uint32_t uiSector)
     return MIFARE_CLASSIC_INVALID_BLOCK;
 }
 
-uint32_t get_sector_for_block(byte_t bTagType, uint32_t uiBlock)
+uint32_t get_sector_for_block(uint8_t bTagType, uint32_t uiBlock)
 {
     if ( !is_valid_block(bTagType, uiBlock) )
     {
@@ -274,44 +274,44 @@ uint32_t get_sector_for_block(byte_t bTagType, uint32_t uiBlock)
     return MIFARE_CLASSIC_INVALID_BLOCK;
 }
 
-bool is_first_sector(byte_t bTagType, uint32_t uiSector)
+bool is_first_sector(uint8_t bTagType, uint32_t uiSector)
 {
     // TODO: write code
     return false;
 }
 
-bool is_first_big_sector(byte_t bTagType, uint32_t uiSector)
+bool is_first_big_sector(uint8_t bTagType, uint32_t uiSector)
 {
     // TODO: write code
     return false;
 }
 
-bool is_first_small_sector(byte_t bTagType, uint32_t uiSector)
+bool is_first_small_sector(uint8_t bTagType, uint32_t uiSector)
 {
     // TODO: write code
     return false;
 }
 
-bool is_last_sector(byte_t bTagType, uint32_t uiSector)
+bool is_last_sector(uint8_t bTagType, uint32_t uiSector)
 {
     // TODO: write code
     return false;
 }
 
-bool is_last_big_sector(byte_t bTagType, uint32_t uiSector)
+bool is_last_big_sector(uint8_t bTagType, uint32_t uiSector)
 {
     // TODO: write code
     return false;
 }
 
-bool is_last_small_sector(byte_t bTagType, uint32_t uiSector)
+bool is_last_small_sector(uint8_t bTagType, uint32_t uiSector)
 {
     // TODO: write code
     return false;
 }
 
 // Test case function for checking correct functionality of the block/sector is_ ang get_ functions
-void test_mifare_classic_blocks_sectors_functions(byte_t bTagType)
+void test_mifare_classic_blocks_sectors_functions(uint8_t bTagType)
 {
     uint32_t i;
     uint32_t max_blocks, max_sectors;
@@ -460,7 +460,7 @@ bool mfcuk_load_tag_dump_ext(char *filename, mifare_classic_tag_ext *tag_ext)
 void print_mifare_classic_tag_keys(const char *title, mifare_classic_tag *tag)
 {
     uint32_t i, max_blocks, trailer_block;
-    byte_t bTagType;
+    uint8_t bTagType;
     mifare_classic_block_trailer *ptr_trailer = NULL;
 
     if (!tag)
@@ -521,7 +521,7 @@ void print_mifare_classic_tag_keys(const char *title, mifare_classic_tag *tag)
     return;
 }
 
-bool mfcuk_key_uint64_to_arr(const uint64_t *ui64Key, byte_t *arr6Key)
+bool mfcuk_key_uint64_to_arr(const uint64_t *ui64Key, uint8_t *arr6Key)
 {
     int i;
 
@@ -532,13 +532,13 @@ bool mfcuk_key_uint64_to_arr(const uint64_t *ui64Key, byte_t *arr6Key)
 
     for (i = 0; i<MIFARE_CLASSIC_KEY_BYTELENGTH; i++)
     {
-        arr6Key[i] = (byte_t) (((*ui64Key) >> 8*(MIFARE_CLASSIC_KEY_BYTELENGTH - i - 1)) & 0xFF);
+        arr6Key[i] = (uint8_t) (((*ui64Key) >> 8*(MIFARE_CLASSIC_KEY_BYTELENGTH - i - 1)) & 0xFF);
     }
 
     return true;
 }
 
-bool mfcuk_key_arr_to_uint64(const byte_t *arr6Key, uint64_t *ui64Key)
+bool mfcuk_key_arr_to_uint64(const uint8_t *arr6Key, uint64_t *ui64Key)
 {
     uint64_t key = 0;
     int i;

@@ -167,7 +167,6 @@
   }
 #endif
 
-
 #include <string.h>
 #include <err.h>
 #include <errno.h>
@@ -214,6 +213,13 @@
 #  define ERR(...)  warnx ("ERROR: " __VA_ARGS__ )
 #endif
 
+uint32_t bswap_32_pu8(uint8_t *pu8)
+{
+    uint32_t u32;
+    memcpy(&u32, pu8, sizeof(uint32_t));
+    return u32;
+}
+
 extern mfcuk_finger_tmpl_entry mfcuk_finger_db[];
 extern int mfcuk_finger_db_entries;
 
@@ -222,9 +228,9 @@ tag_nonce_entry_t arrSpoofEntries[MAX_TAG_NONCES]; // "Cache" array of already r
 uint32_t numSpoofEntries = 0; // Actual number of entries in the arrSpoofEntries
 uint32_t numAuthAttempts = 0; // Number of authentication attempts for Recovery of keys - used to statistics. TODO: implement proper statistics with timings, number of tries, etc.
 bool bfOpts[256] = {false}; // Command line options, indicates their presence, initialize with false
-byte_t verboseLevel = 0; // No verbose level by default
+uint8_t verboseLevel = 0; // No verbose level by default
 
-static const nfc_modulation_t nmMifare = {
+static const nfc_modulation nmMifare = {
   .nmt = NMT_ISO14443A,
   .nbr = NBR_106,
 };
@@ -240,7 +246,7 @@ int compareTagNonces (const void * a, const void * b)
 }
 
 // TODO: combine mfcuk_verify_key_block() with mfcuk_recover_key_block(), since a lot of code is duplicate
-uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, byte_t bTagType, uint32_t uiBlock)
+uint32_t mfcuk_verify_key_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, uint8_t bTagType, uint32_t uiBlock)
 {
     uint32_t pos;
 
@@ -254,12 +260,11 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     uint64_t lfsr;
 
     // Communication related variables
-    byte_t abtAuth[4]        = { 0x00,0x00,0x00,0x00 };
-    byte_t abtArEnc[8]       = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
-    byte_t abtArEncPar[8]    = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
-    byte_t abtRx[MAX_FRAME_LEN];
-    byte_t abtRxPar[MAX_FRAME_LEN];
-    size_t szRx;
+    uint8_t abtAuth[4]        = { 0x00,0x00,0x00,0x00 };
+    uint8_t abtArEnc[8]       = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
+    uint8_t abtArEncPar[8]    = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
+    uint8_t abtRx[MAX_FRAME_LEN];
+    uint8_t abtRxPar[MAX_FRAME_LEN];
     uint32_t nt, nt_orig; // Supplied tag nonce
 
     if ( (bKeyType != keyA) && (bKeyType != keyB) )
@@ -283,23 +288,23 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     iso14443a_crc_append(abtAuth,2);
 
     // Now we take over, first we need full control over the CRC
-    if ( !nfc_configure(pnd,NDO_HANDLE_CRC,false) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_CRC,false) )
     {
         return MFCUK_FAIL_COMM;
     }
 
     // We need to disable EASY_FRAMING feature to talk in "raw" mode
-    nfc_configure (pnd, NDO_EASY_FRAMING, false);
+    nfc_device_set_property_bool (pnd, NP_EASY_FRAMING, false);
 
     // Request plain tag-nonce
-    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx, NULL))
+    if (0 > nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,sizeof(abtRx),-1))
     {
         return MFCUK_FAIL_COMM;
     }
-    nfc_configure (pnd, NDO_EASY_FRAMING, true);
+    nfc_device_set_property_bool (pnd, NP_EASY_FRAMING, true);
 
     // Save the tag nonce (nt)
-    nt = bswap_32(*((uint32_t *) abtRx));
+    nt = bswap_32_pu8(abtRx);
     nt_orig = nt;
 
     // Init cipher with key
@@ -347,19 +352,20 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     }
 
     // Finally we want to send arbitrary parity bits
-    if ( !nfc_configure(pnd,NDO_HANDLE_PARITY,false) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_PARITY,false) )
     {
         return MFCUK_FAIL_COMM;
     }
 
-    if ( !nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&szRx,abtRxPar) )
+    int res;
+    if ( 0 > (res = nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,abtRxPar)) )
     {
         return MFCUK_FAIL_AUTH;
     }
 
     crypto1_destroy(pcs);
 
-    if (szRx == 32)
+    if (res == 32)
     {
         for (pos=0; pos<4; pos++)
         {
@@ -392,17 +398,16 @@ uint32_t mfcuk_verify_key_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64
     return MFCUK_SUCCESS;
 }
 
-uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, byte_t bTagType, uint32_t uiBlock, uint64_t *ui64KeyRecovered)
+uint32_t mfcuk_key_recovery_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, uint8_t bTagType, uint32_t uiBlock, uint64_t *ui64KeyRecovered)
 {
     // Communication variables
     uint32_t pos, pos2, nt;
     struct Crypto1State* pcs;
-    byte_t abtAuth[4]        = { 0x60,0x00,0x00,0x00 };
-    byte_t abtArEnc[8]       = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
-    byte_t abtArEncPar[8]    = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
-    byte_t abtRx[MAX_FRAME_LEN];
-    byte_t abtRxPar[MAX_FRAME_LEN];
-    size_t szRx;
+    uint8_t abtAuth[4]        = { 0x60,0x00,0x00,0x00 };
+    uint8_t abtArEnc[8]       = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
+    uint8_t abtArEncPar[8]    = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
+    uint8_t abtRx[MAX_FRAME_LEN];
+    uint8_t abtRxPar[MAX_FRAME_LEN];
 
     // zveriu
     static uint32_t nt_orig = 0;
@@ -414,7 +419,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     struct Crypto1State *current_state;
     uint32_t i;
     uint64_t key_recovered;
-    byte_t flag_key_recovered = 0; // FIXME: fix the {Nr} iteration properly. This a quick fix for cases when 0xDEADBEEF {Nr} is not working
+    uint8_t flag_key_recovered = 0; // FIXME: fix the {Nr} iteration properly. This a quick fix for cases when 0xDEADBEEF {Nr} is not working
 
     if ( (bKeyType != keyA) && (bKeyType != keyB) )
     {
@@ -437,24 +442,24 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     iso14443a_crc_append(abtAuth,2);
 
     // Now we take over, first we need full control over the CRC
-    nfc_configure(pnd,NDO_HANDLE_CRC,false);
+    nfc_device_set_property_bool(pnd,NP_HANDLE_CRC,false);
 
     // We need to disable EASY_FRAMING feature to talk in "raw" mode
-    nfc_configure (pnd, NDO_EASY_FRAMING, false);
+    nfc_device_set_property_bool(pnd, NP_EASY_FRAMING, false);
 
     // Request plain tag-nonce
     //printf("Nt: ");
-    if (!nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,&szRx, NULL))
+    if (0 > nfc_initiator_transceive_bytes(pnd,abtAuth,4,abtRx,sizeof(abtRx),-1))
     {
         //printf("\n\nFAILURE - Failed to get TAG NONCE!!!\n\n");
         return MFCUK_FAIL_COMM;
     }
-    nfc_configure (pnd, NDO_EASY_FRAMING, true);
+    nfc_device_set_property_bool (pnd, NP_EASY_FRAMING, true);
 
     //print_hex(abtRx,4);
 
     // Save the tag nonce (nt)
-    nt = bswap_32(*((uint32_t *) &abtRx));
+    nt = bswap_32_pu8(abtRx);
 
     // zveriu
     //printf("INFO - Nonce distance %d (from 0x%08x, to 0x%08x)\n", nonce_distance(nt, nt_orig), nt, nt_orig);
@@ -607,7 +612,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
         // zveriu - Make the Ar incorrect, but leave parity bits calculated/guessed_spoofed as above
         /* If all eight parity bits are correct, but the answer Ar is
         wrong, the tag responds with the 4-bit error code 0x5
-        signifying failed authentication, called ‘transmission error’ in [KHG08].
+        signifying failed authentication, called Â‘transmission errorÂ’ in [KHG08].
         */
         if (sendSpoofAr)
         {
@@ -631,13 +636,14 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     }
 
     // Finally we want to send arbitrary parity bits
-    nfc_configure(pnd,NDO_HANDLE_PARITY,false);
+    nfc_device_set_property_bool(pnd,NP_HANDLE_PARITY,false);
 
     // Transmit reader-answer
     //printf(" Ar: ");
     //print_hex_par(abtArEnc,64,abtArEncPar);
 
-    if (!nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,&szRx,abtRxPar))
+    int res;
+    if (0 > (res=nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,abtRxPar)))
     {
         if (sendSpoofAr)
         {
@@ -648,7 +654,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
     }
 
     // zveriu - Successful: either authentication (szRx == 32) either encrypted 0x5 reponse (szRx == 4)
-    if (szRx == 4)
+    if (res == 4)
     {
         //printf("INFO - 4-bit (szRx=%d) error code 0x5 encrypted (abtRx=0x%02x)\n", szRx, abtRx[0] & 0xf);
 
@@ -721,7 +727,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device_t* pnd, uint32_t uiUID, uint64_t ui
             }
         }
     }
-    else if (szRx == 32)
+    else if (res == 32)
     {
         // Are we so MFCUKing lucky (?!), since ui64Key is a "dummy" key
         flag_key_recovered = true;
@@ -796,7 +802,7 @@ void print_identification()
 void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag)
 {
     uint32_t i, max_blocks, trailer_block;
-    byte_t bTagType;
+    uint8_t bTagType;
     mifare_classic_block_trailer *ptr_trailer = NULL;
 
     if (!tag)
@@ -864,26 +870,26 @@ void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag
     return;
 }
 
-bool mfcuk_darkside_reset_advanced(nfc_device_t* pnd)
+bool mfcuk_darkside_reset_advanced(nfc_device *pnd)
 {
-    if ( !nfc_configure(pnd,NDO_HANDLE_CRC,true) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_CRC,true) )
     {
-        //ERR("configuring NDO_HANDLE_CRC");
+        //ERR("configuring NP_HANDLE_CRC");
         //return false;
     }
 
-    if ( !nfc_configure(pnd,NDO_HANDLE_PARITY,true) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_PARITY,true) )
     {
-        //ERR("configuring NDO_HANDLE_PARITY");
+        //ERR("configuring NP_HANDLE_PARITY");
         //return false;
     }
 
     return true;
 }
 
-bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSleepAfterFieldON, nfc_target_info_t* ti)
+bool mfcuk_darkside_select_tag(nfc_device *pnd, int iSleepAtFieldOFF, int iSleepAfterFieldON, nfc_target_info *ti)
 {
-    nfc_target_t ti_tmp;
+    nfc_target ti_tmp;
 
     if ( !pnd || !ti )
     {
@@ -892,9 +898,9 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     }
 
     // Drop the field for a while, so the card can reset
-    if ( !nfc_configure(pnd,NDO_ACTIVATE_FIELD,false) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_ACTIVATE_FIELD,false) )
     {
-        ERR("configuring NDO_ACTIVATE_FIELD");
+        ERR("configuring NP_ACTIVATE_FIELD");
         return false;
     }
 
@@ -902,29 +908,29 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     sleep(iSleepAtFieldOFF);
 
     // Let the reader only try once to find a tag
-    if ( !nfc_configure(pnd,NDO_INFINITE_SELECT,false) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_INFINITE_SELECT,false) )
     {
-        ERR("configuring NDO_INFINITE_SELECT");
+        ERR("configuring NP_INFINITE_SELECT");
         return false;
     }
 
     // Configure the CRC and Parity settings
-    if ( !nfc_configure(pnd,NDO_HANDLE_CRC,true) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_CRC,true) )
     {
-        ERR("configuring NDO_HANDLE_CRC");
+        ERR("configuring NP_HANDLE_CRC");
         return false;
     }
 
-    if ( !nfc_configure(pnd,NDO_HANDLE_PARITY,true) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_PARITY,true) )
     {
-        ERR("configuring NDO_HANDLE_PARITY");
+        ERR("configuring NP_HANDLE_PARITY");
         return false;
     }
 
     // Enable field so more power consuming cards can power themselves up
-    if ( !nfc_configure(pnd,NDO_ACTIVATE_FIELD,true) )
+    if ( 0 > nfc_device_set_property_bool(pnd,NP_ACTIVATE_FIELD,true) )
     {
-        ERR("configuring NDO_ACTIVATE_FIELD");
+        ERR("configuring NP_ACTIVATE_FIELD");
         return false;
     }
 
@@ -932,7 +938,7 @@ bool mfcuk_darkside_select_tag(nfc_device_t* pnd, int iSleepAtFieldOFF, int iSle
     sleep(iSleepAfterFieldON);
 
     // Poll for a ISO14443A (MIFARE) tag
-    if (!nfc_initiator_select_passive_target(pnd, nmMifare,NULL,0,&ti_tmp))
+    if (0 > nfc_initiator_select_passive_target(pnd, nmMifare,NULL,0,&ti_tmp))
     {
         ERR("connecting to MIFARE Classic tag");
         //nfc_disconnect(pnd);
@@ -950,15 +956,15 @@ int main(int argc, char* argv[])
     int ch = 0;
     char strOutputFilename[256] = {0}; // Initialize with '\0' character
     //char extendedDescription[MFCUK_EXTENDED_DESCRIPTION_LENGTH] = {0}; // Initialize with '\0' character
-    byte_t keyOpt[MIFARE_CLASSIC_KEY_BYTELENGTH] = {0};
-    byte_t uidOpt[MIFARE_CLASSIC_UID_BYTELENGTH] = {0};
+    uint8_t keyOpt[MIFARE_CLASSIC_KEY_BYTELENGTH] = {0};
+    uint8_t uidOpt[MIFARE_CLASSIC_UID_BYTELENGTH] = {0};
     mifare_classic_block_trailer *ptr_trailer = NULL;
     mifare_classic_block_trailer *ptr_trailer_dump = NULL;
     int sector = 0;
     uint32_t block = 0;
-    byte_t action = 0;
-    byte_t specific_key_type = 0;
-    byte_t max_sectors = MIFARE_CLASSIC_4K_MAX_SECTORS;
+    uint8_t action = 0;
+    uint8_t specific_key_type = 0;
+    uint8_t max_sectors = MIFARE_CLASSIC_4K_MAX_SECTORS;
     // Defaults, can be overriden by -S and -s command line arguments
     int iSleepAtFieldOFF = SLEEP_AT_FIELD_OFF; // modified with argument -S
     int iSleepAfterFieldON = SLEEP_AFTER_FIELD_ON; // modified with argument -s
@@ -969,8 +975,8 @@ int main(int argc, char* argv[])
     int iter = 0;
 
     // libnfc related
-    nfc_device_t* pnd;
-    nfc_target_t ti;
+    nfc_device* pnd;
+    nfc_target ti;
 
     // mifare and crapto related
     uint32_t uiErrCode = MFCUK_SUCCESS;
@@ -1008,13 +1014,13 @@ int main(int argc, char* argv[])
     int i, j, k;
     size_t st;
     int numDefKeys = mfcuk_default_keys_num;
-    byte_t (*current_default_keys)[MIFARE_CLASSIC_KEY_BYTELENGTH];
+    uint8_t (*current_default_keys)[MIFARE_CLASSIC_KEY_BYTELENGTH];
 
     // At runtime, duplicate the mfcuk_default_keys[], and then add at it's bottom the default keys specified via -d command line options
     if ( !(current_default_keys = malloc(numDefKeys * MIFARE_CLASSIC_KEY_BYTELENGTH)) )
     {
         ERR("failed to allocate memory for current_default_keys");
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // Init the structs
@@ -1038,7 +1044,7 @@ int main(int argc, char* argv[])
     if (argc < 2)
     {
         print_usage(stdout, argv[0]);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // Load fingerprinting "database"
@@ -1094,7 +1100,7 @@ int main(int argc, char* argv[])
                 if ( !(current_default_keys = realloc(current_default_keys, numDefKeys * MIFARE_CLASSIC_KEY_BYTELENGTH)) )
                 {
                     ERR("failed to reallocate memory for current_default_keys");
-                    return 1;
+                    return EXIT_FAILURE;
                 }
 
                 memcpy( &(current_default_keys[numDefKeys-1]), &keyOpt, MIFARE_CLASSIC_KEY_BYTELENGTH);
@@ -1153,7 +1159,7 @@ int main(int argc, char* argv[])
 
                 if (st >= MIFARE_CLASSIC_UID_BYTELENGTH)
                 {
-                    tag_recover_verify.uid = bswap_32(*((uint32_t *) &uidOpt));
+                    tag_recover_verify.uid = bswap_32_pu8(uidOpt);
                     memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, uidOpt, MIFARE_CLASSIC_UID_BYTELENGTH );
                     bfOpts[ch] = true;
                 }
@@ -1204,14 +1210,14 @@ int main(int argc, char* argv[])
                             if ( !(sector = atoi(token)) && (token[0] != '0') )
                             {
                                 WARN("non-numeric sector argument (%s)", token);
-                                return 1;
+                                return EXIT_FAILURE;
                             }
 
                             // We don't know apriori whether loaded dump or the card on the reader is 1K or 4K, so assume validity for 4K
                             if ( (sector != -1) && !is_valid_sector(MIFARE_CLASSIC_4K, sector) )
                             {
                                 WARN("invalid sector argument (%d)", sector);
-                                return 1;
+                                return EXIT_FAILURE;
                             }
                             else
                             {
@@ -1371,7 +1377,7 @@ int main(int argc, char* argv[])
                 iter = 0;
 
                 // parse the arguments of the option. ugly, ugly... i know :-S
-                while ( (token = strtok(str, sep)) && (iter < sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0])) )
+                while ( (token = strtok(str, sep)) && (iter < (int)(sizeof(pm3_full_set_log)/sizeof(pm3_full_set_log[0]))) )
                 {
                     str = NULL;
                     errno = 0;
@@ -1502,14 +1508,14 @@ int main(int argc, char* argv[])
             case 'h':
                 // Help screen
                 print_usage(stdout, argv[0]);
-                return 0;
+                return EXIT_SUCCESS;
                 break;
             case '?':
             default:
                 // Help screen, on error output
                 ERR("Unknown option %c\n", ch);
                 print_usage(stderr, argv[0]);
-                return 1;
+                return EXIT_FAILURE;
                 break;
         }
     }
@@ -1520,7 +1526,7 @@ int main(int argc, char* argv[])
     // If tests were requested, exit after tests completed
     if ( bfOpts['t'] || bfOpts['T'] )
     {
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     // In case default keys requested (and maybe more specified on command line),
@@ -1578,41 +1584,40 @@ int main(int argc, char* argv[])
 
             memcpy( ptr_trailer, ptr_trailer_dump, sizeof(*ptr_trailer) );
             tag_recover_verify.type = tag_recover_verify.tag_basic.amb[0].mbm.btUnknown;
-            tag_recover_verify.uid = bswap_32 (*((uint32_t *) &(tag_recover_verify.tag_basic.amb[0].mbm.abtUID)));
+            tag_recover_verify.uid = bswap_32_pu8 (tag_recover_verify.tag_basic.amb[0].mbm.abtUID);
         }
     }
 
     if (!bfOpts['C'])
     {
-        printf("NO Connection to reader requested (need option -C). Exiting...\n");
-        return 0;
+        printf("No connection to reader requested (need option -C). Exiting...\n");
+        return EXIT_SUCCESS;
     }
 
     // READER INITIALIZATION BLOCK
     // Try to open the NFC reader
-    pnd = nfc_connect(NULL);
+    nfc_init(NULL);
+    pnd = nfc_open(NULL, NULL);
 
     if (pnd == NULL)
     {
         ERR("connecting to NFC reader");
-        return 1;
+        goto error;
     }
 
-    if ( !nfc_initiator_init(pnd) )
+    if ( 0 > nfc_initiator_init(pnd) )
     {
-        ERR("initializing NFC reader: %s", pnd->acName);
-        nfc_disconnect(pnd);
-        return 1;
+        ERR("initializing NFC reader: %s", nfc_device_get_name(pnd));
+        goto error;
     }
 
-    printf("\nINFO: Connected to NFC reader: %s\n\n", pnd->acName);
+    printf("\nINFO: Connected to NFC reader: %s\n\n", nfc_device_get_name(pnd));
 
     // Select tag and get tag info
     if ( !mfcuk_darkside_select_tag(pnd, iSleepAtFieldOFF, iSleepAfterFieldON, &ti.nti) )
     {
-        ERR("selecting tag on the reader %s", pnd->acName);
-        nfc_disconnect(pnd);
-        return 1;
+        ERR("selecting tag on the reader %s", nfc_device_get_name(pnd));
+        goto error;
     }
 
     mfcuk_darkside_reset_advanced(pnd);
@@ -1629,13 +1634,13 @@ int main(int argc, char* argv[])
     }
 
     // Tag on the reader UID
-    tag_on_reader.uid = bswap_32(*((uint32_t *) &(ti.nti.nai.abtUid)));
+    tag_on_reader.uid = bswap_32_pu8(ti.nti.nai.abtUid);
     memcpy( tag_on_reader.tag_basic.amb[0].mbm.abtUID, ti.nti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
 
     // No command line tag UID specified, take it from the tag on the reader
     if ( !bfOpts['U'] )
     {
-        tag_recover_verify.uid = bswap_32(*((uint32_t *) &(ti.nti.nai.abtUid)));
+        tag_recover_verify.uid = bswap_32_pu8(ti.nti.nai.abtUid);
         memcpy( tag_recover_verify.tag_basic.amb[0].mbm.abtUID, ti.nti.nai.abtUid, MIFARE_CLASSIC_UID_BYTELENGTH);
     }
 
@@ -1656,13 +1661,13 @@ int main(int argc, char* argv[])
         for (i=0; i<max_sectors; i++)
         {
             uint64_t crntVerifKey = 0;
-            byte_t crntVerifTagType = tag_recover_verify.type;
+            uint8_t crntVerifTagType = tag_recover_verify.type;
             int crntNumVerifKeys = (bfOpts['D'])?(numDefKeys):(1);
             mifare_param mp;
 
             // Depending on which of keyA or keyB the j value is, the checks and actions below will address exactly that keyA or keyB of current sector
-            byte_t action_byte = ACTIONS_KEY_A + 2*(1 - (keyB-k));
-            byte_t result_byte = RESULTS_KEY_A + 2*(1 - (keyB-k));
+            uint8_t action_byte = ACTIONS_KEY_A + 2*(1 - (keyB-k));
+            uint8_t result_byte = RESULTS_KEY_A + 2*(1 - (keyB-k));
 
             printf(" %x", i);
             fflush(stdout);
@@ -1704,9 +1709,9 @@ int main(int argc, char* argv[])
                     return 1;
                 }
 
-                if ( !nfc_initiator_init(pnd) )
+                if ( 0 > nfc_initiator_init(pnd) )
                 {
-                    ERR("initializing NFC reader: %s", pnd->acName);
+                    ERR("initializing NFC reader: %s", nfc_device_get_name(pnd));
                     nfc_disconnect(pnd);
                     return 1;
                 }
@@ -1730,15 +1735,15 @@ int main(int argc, char* argv[])
                 // Reset advanced settings
                 mfcuk_darkside_reset_advanced(pnd);
         */
-                memcpy(mp.mpa.abtUid, tag_recover_verify.tag_basic.amb[0].mbm.abtUID, MIFARE_CLASSIC_UID_BYTELENGTH);
+                memcpy(mp.mpa.abtAuthUid, tag_recover_verify.tag_basic.amb[0].mbm.abtUID, MIFARE_CLASSIC_UID_BYTELENGTH);
                 memcpy(mp.mpa.abtKey, &(current_default_keys[j][0]), MIFARE_CLASSIC_KEY_BYTELENGTH);
 
-                if ( !nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti) )
+                if ( 0 > nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti) )
                 {
                     ERR("tag was removed or cannot be selected");
                 }
 
-                if ( !nfc_initiator_mifare_cmd(pnd, k, block, &mp) )
+                if ( 0 > nfc_initiator_mifare_cmd(pnd, k, block, &mp) )
                 {
                     ERR("AUTH sector %d, block %d, key %012"PRIx64", key-type 0x%02x, error code 0x%02x", i, block, crntVerifKey, k, uiErrCode);
                 }
@@ -1777,8 +1782,8 @@ int main(int argc, char* argv[])
         for (j=keyA; j<=keyB; j++)
         {
             // Depending on which of keyA or keyB the j value is, the checks and actions below will address exactly that keyA or keyB of current sector
-            byte_t action_byte = ACTIONS_KEY_A + 2*(1 - (keyB-j));
-            byte_t result_byte = RESULTS_KEY_A + 2*(1 - (keyB-j));
+            uint8_t action_byte = ACTIONS_KEY_A + 2*(1 - (keyB-j));
+            uint8_t result_byte = RESULTS_KEY_A + 2*(1 - (keyB-j));
 
             // We have a sector and a key-type of that sector marked for recovery and still the key was not either verified nor recovered
             if ( (ptr_trailer->abtAccessBits[action_byte] & ACTIONS_RECOVER) &&
@@ -1791,22 +1796,21 @@ int main(int argc, char* argv[])
 
                 // TEST
                 // Before starting a new recovery session, disconnect and reconnect to reader and then tag
-                nfc_disconnect(pnd);
+                nfc_close(pnd);
 
                 // Try to open the NFC reader
-                pnd = nfc_connect(NULL);
+                pnd = nfc_open(NULL, NULL);
 
                 if (pnd == NULL)
                 {
                     ERR("connecting to NFC reader");
-                    return 1;
+                    return EXIT_FAILURE;
                 }
 
-                if ( !nfc_initiator_init(pnd) )
+                if ( 0 > nfc_initiator_init(pnd) )
                 {
-                    ERR("initializing NFC reader: %s", pnd->acName);
-                    nfc_disconnect(pnd);
-                    return 1;
+                    ERR("initializing NFC reader: %s", nfc_device_get_name(pnd));
+                    goto error;
                 }
                 // TEST
 
@@ -1876,7 +1880,8 @@ int main(int argc, char* argv[])
     */
 
     // Clean up and release device
-    nfc_disconnect(pnd);
+    nfc_close(pnd);
+    nfc_exit(NULL);
 
     // TODO: think which tag to output and make sure it contains all the retreived data
     // TODO: make this as a function and call it after each key is verified or recovered (because of reader-locking bug)
@@ -1909,5 +1914,10 @@ int main(int argc, char* argv[])
         }
     }
 
-    return 0;
+    return EXIT_SUCCESS;
+
+error:
+    nfc_close(pnd);
+    nfc_exit(NULL);
+    return EXIT_FAILURE;
 }
