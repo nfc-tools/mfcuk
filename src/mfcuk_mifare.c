@@ -274,42 +274,6 @@ uint32_t get_sector_for_block(uint8_t bTagType, uint32_t uiBlock)
     return MIFARE_CLASSIC_INVALID_BLOCK;
 }
 
-bool is_first_sector(uint8_t bTagType, uint32_t uiSector)
-{
-    // TODO: write code
-    return false;
-}
-
-bool is_first_big_sector(uint8_t bTagType, uint32_t uiSector)
-{
-    // TODO: write code
-    return false;
-}
-
-bool is_first_small_sector(uint8_t bTagType, uint32_t uiSector)
-{
-    // TODO: write code
-    return false;
-}
-
-bool is_last_sector(uint8_t bTagType, uint32_t uiSector)
-{
-    // TODO: write code
-    return false;
-}
-
-bool is_last_big_sector(uint8_t bTagType, uint32_t uiSector)
-{
-    // TODO: write code
-    return false;
-}
-
-bool is_last_small_sector(uint8_t bTagType, uint32_t uiSector)
-{
-    // TODO: write code
-    return false;
-}
-
 // Test case function for checking correct functionality of the block/sector is_ ang get_ functions
 void test_mifare_classic_blocks_sectors_functions(uint8_t bTagType)
 {
