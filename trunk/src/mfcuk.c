@@ -934,10 +934,9 @@ bool mfcuk_darkside_select_tag(nfc_device *pnd, int iSleepAtFieldOFF, int iSleep
     sleep(iSleepAfterFieldON);
 
     // Poll for a ISO14443A (MIFARE) tag
-    if (0 > nfc_initiator_select_passive_target(pnd, nmMifare,NULL,0,&ti_tmp))
+    if ( 0 >= nfc_initiator_select_passive_target(pnd,nmMifare,NULL,0,&ti_tmp))
     {
         ERR("connecting to MIFARE Classic tag");
-        //nfc_disconnect(pnd);
         return false;
     }
 
@@ -1734,7 +1733,7 @@ int main(int argc, char* argv[])
                 memcpy(mp.mpa.abtAuthUid, tag_recover_verify.tag_basic.amb[0].mbm.abtUID, MIFARE_CLASSIC_UID_BYTELENGTH);
                 memcpy(mp.mpa.abtKey, &(current_default_keys[j][0]), MIFARE_CLASSIC_KEY_BYTELENGTH);
 
-                if ( 0 > nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti) )
+                if ( 0 >= nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti) )
                 {
                     ERR("tag was removed or cannot be selected");
                 }
