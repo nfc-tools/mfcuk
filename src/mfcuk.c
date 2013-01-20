@@ -209,7 +209,7 @@
 #  define ERR(...)  warnx ("ERROR: " __VA_ARGS__ )
 #endif
 
-uint32_t bswap_32_pu8(uint8_t *pu8)
+static uint32_t bswap_32_pu8(uint8_t *pu8)
 {
     uint32_t u32;
     memcpy(&u32, pu8, sizeof(uint32_t));
@@ -231,7 +231,7 @@ static const nfc_modulation nmMifare = {
   .nbr = NBR_106,
 };
 
-int compareTagNonces (const void * a, const void * b)
+static int compareTagNonces (const void * a, const void * b)
 {
     // TODO: test the improvement (especially corner cases, over/under-flows) "return ( (*(uint32_t*)a) - (*(uint32_t*)b) );
     if ( *(uint32_t*)a > *(uint32_t*)b ) return 1;
@@ -242,7 +242,7 @@ int compareTagNonces (const void * a, const void * b)
 }
 
 // TODO: combine mfcuk_verify_key_block() with mfcuk_recover_key_block(), since a lot of code is duplicate
-uint32_t mfcuk_verify_key_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, uint8_t bTagType, uint32_t uiBlock)
+static uint32_t mfcuk_verify_key_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, uint8_t bTagType, uint32_t uiBlock)
 {
     uint32_t pos;
 
@@ -354,7 +354,7 @@ uint32_t mfcuk_verify_key_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Ke
     }
 
     int res;
-    if ( 0 > (res = nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,abtRxPar)) )
+    if ( 0 > (res = nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,sizeof(abtRx),abtRxPar)) )
     {
         return MFCUK_FAIL_AUTH;
     }
@@ -394,7 +394,7 @@ uint32_t mfcuk_verify_key_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Ke
     return MFCUK_SUCCESS;
 }
 
-uint32_t mfcuk_key_recovery_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, uint8_t bTagType, uint32_t uiBlock, uint64_t *ui64KeyRecovered)
+static uint32_t mfcuk_key_recovery_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64Key, mifare_key_type bKeyType, uint8_t bTagType, uint32_t uiBlock, uint64_t *ui64KeyRecovered)
 {
     // Communication variables
     uint32_t pos, pos2, nt;
@@ -639,7 +639,7 @@ uint32_t mfcuk_key_recovery_block(nfc_device* pnd, uint32_t uiUID, uint64_t ui64
     //print_hex_par(abtArEnc,64,abtArEncPar);
 
     int res;
-    if (0 > (res=nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,abtRxPar)))
+    if (0 > (res=nfc_initiator_transceive_bits(pnd,abtArEnc,64,abtArEncPar,abtRx,sizeof(abtRx),abtRxPar)))
     {
         if (sendSpoofAr)
         {
@@ -751,7 +751,7 @@ TODO:
 -m max_iterations - stop everything after so many iterations, default is infinite until all keys found
 -T max_elapsed_time - stop after time elapsed
 */
-void print_usage(FILE *fp, const char * prog_name)
+static void print_usage(FILE *fp, const char * prog_name)
 {
     fprintf(fp, "Usage:\n");
     fprintf(fp, "-C - require explicit connection to the reader. Without this option, the connection is not made and recovery will not occur\n");
@@ -787,7 +787,7 @@ void print_usage(FILE *fp, const char * prog_name)
     return;
 }
 
-void print_identification(void)
+static void print_identification(void)
 {
     fprintf(stdout, "%s - %s\n", PACKAGE_NAME, PACKAGE_VERSION);
     fprintf(stdout, "%s - %s\n", BUILD_NAME, BUILD_VERSION);
@@ -795,7 +795,7 @@ void print_identification(void)
     fprintf(stdout, "\n");
 }
 
-void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag)
+static void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag)
 {
     uint32_t i, max_blocks, trailer_block;
     uint8_t bTagType;
@@ -866,7 +866,7 @@ void print_mifare_classic_tag_actions(const char *title, mifare_classic_tag *tag
     return;
 }
 
-bool mfcuk_darkside_reset_advanced(nfc_device *pnd)
+static bool mfcuk_darkside_reset_advanced(nfc_device *pnd)
 {
     if ( 0 > nfc_device_set_property_bool(pnd,NP_HANDLE_CRC,true) )
     {
@@ -883,7 +883,7 @@ bool mfcuk_darkside_reset_advanced(nfc_device *pnd)
     return true;
 }
 
-bool mfcuk_darkside_select_tag(nfc_device *pnd, int iSleepAtFieldOFF, int iSleepAfterFieldON, nfc_target_info *ti)
+static bool mfcuk_darkside_select_tag(nfc_device *pnd, int iSleepAtFieldOFF, int iSleepAfterFieldON, nfc_target_info *ti)
 {
     nfc_target ti_tmp;
 
@@ -965,11 +965,12 @@ int main(int argc, char* argv[])
     int iSleepAfterFieldON = SLEEP_AFTER_FIELD_ON; // modified with argument -s
 
     char *token = NULL;
-    char *sep = ":";
+    const char *sep = ":";
     char *str = NULL;
     int iter = 0;
 
     // libnfc related
+    nfc_context *context;
     nfc_device* pnd;
     nfc_target ti;
 
@@ -1591,8 +1592,8 @@ int main(int argc, char* argv[])
 
     // READER INITIALIZATION BLOCK
     // Try to open the NFC reader
-    nfc_init(NULL);
-    pnd = nfc_open(NULL, NULL);
+    nfc_init(&context);
+    pnd = nfc_open (context, NULL);
 
     if (pnd == NULL)
     {
@@ -1794,7 +1795,7 @@ int main(int argc, char* argv[])
                 nfc_close(pnd);
 
                 // Try to open the NFC reader
-                pnd = nfc_open(NULL, NULL);
+                pnd = nfc_open (context, NULL);
 
                 if (pnd == NULL)
                 {
@@ -1876,7 +1877,7 @@ int main(int argc, char* argv[])
 
     // Clean up and release device
     nfc_close(pnd);
-    nfc_exit(NULL);
+    nfc_exit (context);
 
     // TODO: think which tag to output and make sure it contains all the retreived data
     // TODO: make this as a function and call it after each key is verified or recovered (because of reader-locking bug)
@@ -1913,6 +1914,6 @@ int main(int argc, char* argv[])
 
 error:
     nfc_close(pnd);
-    nfc_exit(NULL);
+    nfc_exit (context);
     return EXIT_FAILURE;
 }

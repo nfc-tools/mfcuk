@@ -58,8 +58,8 @@ typedef int (*mfcuk_finger_decoder) (mifare_classic_tag *dump);
 // Naive implementation of a self-contained fingerprint database entry
 typedef struct _mfcuk_finger_tmpl_entry_
 {
-    char *tmpl_filename;
-    char *tmpl_name;
+    const char *tmpl_filename;
+    const char *tmpl_name;
     mfcuk_finger_comparator tmpl_comparison_func;
     mfcuk_finger_decoder tmpl_decoder_func;
     mfcuk_finger_template *tmpl_data;
