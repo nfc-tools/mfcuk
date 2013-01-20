@@ -1,4 +1,4 @@
-AC_INIT([mfcuk], [0.3.4], [zveriu@gmail.com])
+AC_INIT([mfcuk], [0.3.5], [zveriu@gmail.com])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -11,7 +11,7 @@ AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 # Checks for pkg-config modules.
-LIBNFC_REQUIRED_VERSION=1.6.0
+LIBNFC_REQUIRED_VERSION=1.7.0
 PKG_CHECK_MODULES([libnfc], [libnfc >= $LIBNFC_REQUIRED_VERSION], [], [AC_MSG_ERROR([libnfc >= $LIBNFC_REQUIRED_VERSION is mandatory.])])
 
 PKG_CONFIG_REQUIRES="libnfc"
