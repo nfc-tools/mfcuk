@@ -5,23 +5,23 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 2 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
  Package:
     MiFare Classic Universal toolKit (MFCUK)
- 
+
  Package version:
     0.1
- 
+
  Filename:
     mfcuk_finger.h
 
@@ -45,24 +45,22 @@
 #include "mfcuk_mifare.h"
 
 // Wrapping an ugly template into an externally pleasant name. To implement proper template later.
-typedef struct _mfcuk_finger_template_
-{
-    mifare_classic_tag mask;
-    mifare_classic_tag values;
+typedef struct _mfcuk_finger_template_ {
+  mifare_classic_tag mask;
+  mifare_classic_tag values;
 } mfcuk_finger_template;
 
 // Function type definition, to be used for custom decoders/comparators
-typedef int (*mfcuk_finger_comparator) (mifare_classic_tag *dump, mfcuk_finger_template *tmpl, float *score);
-typedef int (*mfcuk_finger_decoder) (mifare_classic_tag *dump);
+typedef int (*mfcuk_finger_comparator)(mifare_classic_tag *dump, mfcuk_finger_template *tmpl, float *score);
+typedef int (*mfcuk_finger_decoder)(mifare_classic_tag *dump);
 
 // Naive implementation of a self-contained fingerprint database entry
-typedef struct _mfcuk_finger_tmpl_entry_
-{
-    const char *tmpl_filename;
-    const char *tmpl_name;
-    mfcuk_finger_comparator tmpl_comparison_func;
-    mfcuk_finger_decoder tmpl_decoder_func;
-    mfcuk_finger_template *tmpl_data;
+typedef struct _mfcuk_finger_tmpl_entry_ {
+  const char *tmpl_filename;
+  const char *tmpl_name;
+  mfcuk_finger_comparator tmpl_comparison_func;
+  mfcuk_finger_decoder tmpl_decoder_func;
+  mfcuk_finger_template *tmpl_data;
 } mfcuk_finger_tmpl_entry;
 
 int mfcuk_finger_default_comparator(mifare_classic_tag *dump, mfcuk_finger_template *tmpl, float *score);
