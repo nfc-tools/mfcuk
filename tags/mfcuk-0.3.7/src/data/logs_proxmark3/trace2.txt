@@ -1,0 +1,124 @@
+ +      0:   0: TAG 00!   
+ + 337281:    :     30  00  02  a8    
+ +   5032:    :     50  00  57  cd    
+ +   9952:    :     52    
+ + 141825:    :     30  00  02  a8    
+ +   5040:    :     50  00  57  cd    
+ +  10528:    :     52    
+ +   7624:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  10656:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ +  89345:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +   4976:    :     50  00  57  cd    
+ +   9952:    :     52    
+ +     64:   0: TAG 04  00    
+ +   7720:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  14120:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ + 105352:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +  21952:    :     50  00  57  cd    
+ +   9944:    :     52    
+ +     64:   0: TAG 04  00    
+ +  14448:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  10736:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ + 124904:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +   4968:    :     50  00  57  cd    
+ +  10346:    :     52    
+ +     64:   0: TAG 04  00    
+ +   7272:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  13240:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ +  89320:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +   5000:    :     50  00  57  cd    
+ +  10784:    :     52    
+ +     64:   0: TAG 04  00    
+ +   7680:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  11560:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ +  89305:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +   4960:    :     50  00  57  cd    
+ +  10040:    :     52    
+ +     64:   0: TAG 04  00    
+ +  43208:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  10696:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ +  89305:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +   4984:    :     50  00  57  cd    
+ +  10824:    :     52    
+ +     64:   0: TAG 04  00    
+ +   9352:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ +  10680:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ +  90184:    :     30  00  02  a8    
+ +     72:   0: TAG 04    
+ +   4984:    :     50  00  57  cd    
+ +   9944:    :     52    
+ +     64:   0: TAG 04  00    
+ + 102224:    :     93  20    
+ +     64:   0: TAG ca  fd  ca  13  ee    
+ + 939902:    :     93  70  ca  fd  ca  13  ee  8e  ea    
+ +     64:   0: TAG 08  b6  dd    
+ + 752874:    :     60  00  f5  7b    
+ +    112:   0: TAG e9  01  a1  69    
+ +  10352:    :     71  03  4a  be  f9  2f  51  2f      !crc
+ +     64:   0: TAG 99  25! ef! 9d!   
+ + 864094:    :     dc  9f  f9  65      !crc
+ +     72:   0: TAG e5  82  07  a2! e1  ea  c5  cd  14  85! aa! 97! 58! 17  0e  b5  ab! ff      !crc
+ + 312194:    :     4b  de  1d  e9      !crc
+ +     72:   0: TAG 04  0a! 1c! ad  54! 3e  ed  03! 60! 82  42  e4  da! 83! 98! 22  14! f2      !crc
+ + 290616:    :     cc  06  39  d7      !crc
+ +     72:   0: TAG 0a  a3  f1  86  34  8f  9d! 1f! 4d! 7e! f1! 56  8e  9f  ee  32! 88  89      !crc
+ + 204658:    :     80  f4  eb  55      !crc
+ +     72:   0: TAG 9d  6e  88  db! fc  88  14! fa  af  dd  10! cc  74  81! 71  52  fd! d9      !crc
+ + 543394:    :     26  f0  ea  aa      !crc
+ +     72:   0: TAG d5! a1! ed  8d  73! fe! 3e  94  56  db! 39! ad! dc! ff  9c! a3  f2  24!     !crc
+ + 299722:    :     56  00  9a  4d      !crc
+ +     72:   0: TAG 58! cf  13  c4  78  50! 0f! b8  73  1c  33! 25  23  12  1e  a2! 4a  32!     !crc
+ + 215834:    :     db  a2  ec  42      !crc
+ +     72:   0: TAG 78  3f! 30! 02  64  85  63! fe! 81! 9e  27  70  f7  cc  b0  77  ce! 4b      !crc
+ +  97112:    :     a5  78  3e  3d      !crc
+ +     72:   0: TAG ef! fd! 47! 36  e5  c3! c1  96  c5  97  7b! 3d! ce! ab! 6e! 5e  bd  8b      !crc
+ +  87752:    :     a1  9b  41  09      !crc
+ +     72:   0: TAG e5! e1! 28  7d! ee  ae! 60  d7  29  96! d7! a1! 6e  4e  da! 66! 93  bd!     !crc
+ +  89104:    :     70  ff  99  6c      !crc
+ +     72:   0: TAG 17  97  04  0a! 92! 66! 7d  e7! 62  a8  b5! 56  d4  a1  ab! b8  70  4e!     !crc
+ +  87928:    :     5e  6c  03  09      !crc
+ +     72:   0: TAG c5! da  86  a4  a0  24! ab  da! f3  d9  95! f3! 2d! 8e! b7! 07  a5! e6      !crc
+ +  88434:    :     2e  91  6d  54      !crc
+ +     72:   0: TAG b4  37  84  6b! fd! c8  71  f9  bf! a1! 96! af! 85! d3  b9! f0! 5b! 57!     !crc
+ +  87648:    :     25  ad  12  4f      !crc
+ +     72:   0: TAG 7a! 21! 36  81  d1! eb  d6! 39! 04! b7  28! 3f! b1  19! 2e  b2  b4  23!     !crc
+ +  87649:    :     f1  94  78  4b      !crc
+ +     72:   0: TAG 5f! e4  b5  6c  c1  3f  ce  e4  49  d0! e0! 78  bc  46! 92  0f  7a! e5!     !crc
+ + 104544:    :     01  6b  c7  c4      !crc
+ +     72:   0: TAG 95! 78! ca  79! ab! 32  47  8d! 1c! 81! 3d! 26  85  5e  f3  02  71  3f!     !crc
+ +  99737:    :     f6  67  6d  48      !crc
+ +     72:   0: TAG 4b! 6e  fa  87  51  7d  92  a2! fb! 1b! 1d  62! f8! 7b! 2d! cf! c1  20      !crc
+ + 360330:    :     b8  59  c0  94      !crc
+ +     72:   0: TAG b0! 05  25! 4b! 94  8d! 75  62  70! 85  77! e7  a6  1f! 9e! 54  07! d5!     !crc
+ + 443146:    :     7f  3a  fa  6a      !crc
+ +     72:   0: TAG ac  c9  81! b4! de  ee! e5! 0b! 73! 79! 6c  fe! d8  53  00! e1  3c! f0      !crc
+ + 198008:    :     47  e6  ec  f7      !crc
+ +     72:   0: TAG a6  b1! 1e! 8e! 86! ee  d0  4a  4c  ee  34  df  6b  e6! da  45! d6! ed      !crc
+ + 455019:    :     49  13  9c  fb      !crc
+ +     72:   0: TAG 31! 1d  7d  21! 22! e3  af! bc  ce  6e! 6c! 9f  48  c1! 16! 28! f3! 18      !crc
+ + 223097:    :     ff  43  e9  35      !crc
+ +     72:   0: TAG e5! 41  d7  99! 46  8d! ff  e7! 1e! 22  32! d0  93! 9e  a1  c5  5c! 32!     !crc
+
+# http://www.proxmark.org/forum/topic/385/error-with-mifarecrackpy/
+# real uid is:    ca  fd  ca  13
+# 0xcafdca13 0xe901a169 0x71034abe 0xf92f512f 0x9925ef9d
