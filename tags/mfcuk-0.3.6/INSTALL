@@ -1,0 +1,5 @@
+If you use a development version (SVN), you have to run:
+autoreconf -is
+./configure
+make
+
