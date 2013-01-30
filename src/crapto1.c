@@ -22,7 +22,7 @@
 
 #if !defined LOWMEM && defined __GNUC__
 static uint8_t filterlut[1 << 20];
-static void __attribute__((constructor)) fill_lut()
+static void __attribute__((constructor)) fill_lut(void)
 {
   uint32_t i;
   for (i = 0; i < 1 << 20; ++i)
@@ -57,7 +57,8 @@ static void quicksort(uint32_t *const start, uint32_t *const stop)
 /** binsearch
  * Binary search for the first occurence of *stop's MSB in sorted [start,stop]
  */
-static inline uint32_t *binsearch(uint32_t *start, uint32_t *stop)
+static inline uint32_t *
+binsearch(uint32_t *start, uint32_t *stop)
 {
   uint32_t mid, val = *stop & 0xff000000;
   while (start != stop)
@@ -107,7 +108,8 @@ extend_table(uint32_t *tbl, uint32_t **end, int bit, int m1, int m2, uint32_t in
 /** extend_table_simple
  * using a bit of the keystream extend the table of possible lfsr states
  */
-static inline void extend_table_simple(uint32_t *tbl, uint32_t **end, int bit)
+static inline void
+extend_table_simple(uint32_t *tbl, uint32_t **end, int bit)
 {
   for (*tbl <<= 1; tbl <= *end; *++tbl <<= 1)
     if (filter(*tbl) ^ filter(*tbl | 1)) {
@@ -140,16 +142,13 @@ recover(uint32_t *o_head, uint32_t *o_tail, uint32_t oks,
   }
 
   for (i = 0; i < 4 && rem--; i++) {
-    oks >>= 1;
-    eks >>= 1;
-    in >>= 2;
-    extend_table(o_head, &o_tail, oks & 1, LF_POLY_EVEN << 1 | 1,
-                 LF_POLY_ODD << 1, 0);
+    extend_table(o_head, &o_tail, (oks >>= 1) & 1,
+                 LF_POLY_EVEN << 1 | 1, LF_POLY_ODD << 1, 0);
     if (o_head > o_tail)
       return sl;
 
-    extend_table(e_head, &e_tail, eks & 1, LF_POLY_ODD,
-                 LF_POLY_EVEN << 1 | 1, in & 3);
+    extend_table(e_head, &e_tail, (eks >>= 1) & 1,
+                 LF_POLY_ODD, LF_POLY_EVEN << 1 | 1, (in >>= 2) & 3);
     if (e_head > e_tail)
       return sl;
   }
@@ -189,11 +188,8 @@ struct Crypto1State *lfsr_recovery32(uint32_t ks2, uint32_t in) {
   odd_head = odd_tail = malloc(sizeof(uint32_t) << 21);
   even_head = even_tail = malloc(sizeof(uint32_t) << 21);
   statelist =  malloc(sizeof(struct Crypto1State) << 18);
-  if (!odd_tail-- || !even_tail-- || !statelist) {
-    free(statelist);
-    statelist = 0;
+  if (!odd_tail-- || !even_tail-- || !statelist)
     goto out;
-  }
 
   statelist->odd = statelist->even = 0;
 
@@ -259,12 +255,12 @@ struct Crypto1State *lfsr_recovery64(uint32_t ks2, uint32_t ks3) {
   sl->odd = sl->even = 0;
 
   for (i = 30; i >= 0; i -= 2) {
-    oks[i >> 1] = BEBIT(ks2, i);
-    oks[16 + (i >> 1)] = BEBIT(ks3, i);
+    oks[i >> 1] = BIT(ks2, i ^ 24);
+    oks[16 + (i >> 1)] = BIT(ks3, i ^ 24);
   }
   for (i = 31; i >= 0; i -= 2) {
-    eks[i >> 1] = BEBIT(ks2, i);
-    eks[16 + (i >> 1)] = BEBIT(ks3, i);
+    eks[i >> 1] = BIT(ks2, i ^ 24);
+    eks[16 + (i >> 1)] = BIT(ks3, i ^ 24);
   }
 
   for (i = 0xfffff; i >= 0; --i) {
@@ -313,6 +309,11 @@ continue2:
   return statelist;
 }
 
+uint8_t lfsr_rollback_bit(struct Crypto1State *s, uint32_t in, int fb);
+uint8_t lfsr_rollback_byte(struct Crypto1State *s, uint32_t in, int fb);
+uint32_t lfsr_rollback_word(struct Crypto1State *s, uint32_t in, int fb);
+uint32_t *lfsr_prefix_ks(uint8_t ks[8], int isodd);
+
 /** lfsr_rollback_bit
  * Rollback the shift register in order to get previous states
  */
@@ -338,7 +339,8 @@ uint8_t lfsr_rollback_bit(struct Crypto1State *s, uint32_t in, int fb)
  */
 uint8_t lfsr_rollback_byte(struct Crypto1State *s, uint32_t in, int fb)
 {
-  int i, ret = 0;
+  int i;
+  uint8_t ret = 0;
   for (i = 7; i >= 0; --i)
     ret |= lfsr_rollback_bit(s, BIT(in, i), fb) << i;
   return ret;
@@ -387,28 +389,30 @@ static uint32_t fastfwd[2][8] = {
  * Described in the "dark side" paper. It returns an -1 terminated array
  * of possible partial(21 bit) secret state.
  * The required keystream(ks) needs to contain the keystream that was used to
- * encrypt the NACK which is observed when varying only the 3 last bits of Nr
+ * encrypt the NACK which is observed when varying only the 4 last bits of Nr
  * only correct iff [NR_3] ^ NR_3 does not depend on Nr_3
  */
 uint32_t *lfsr_prefix_ks(uint8_t ks[8], int isodd)
 {
-  uint32_t c, entry, *candidates = malloc(4 << 10);
-  int i, size = 0, good;
+  uint32_t c, entry, *candidates = malloc(4 << 21);
+  int i, size = (1 << 21) - 1;
 
   if (!candidates)
     return 0;
 
-  for (i = 0; i < 1 << 21; ++i) {
-    for (c = 0, good = 1; good && c < 8; ++c) {
-      entry = i ^ fastfwd[isodd][c];
-      good &= (BIT(ks[c], isodd) == filter(entry >> 1));
-      good &= (BIT(ks[c], isodd + 2) == filter(entry));
-    }
-    if (good)
-      candidates[size++] = i;
-  }
+  for (i = 0; i <= size; ++i)
+    candidates[i] = i;
 
-  candidates[size] = -1;
+  for (c = 0;  c < 8; ++c)
+    for (i = 0; i <= size; ++i) {
+      entry = candidates[i] ^ fastfwd[isodd][c];
+
+      if (filter(entry >> 1) != BIT(ks[c], isodd) ||
+          filter(entry) != BIT(ks[c], isodd + 2))
+        candidates[i--] = candidates[size--];
+    }
+
+  candidates[size + 1] = -1;
 
   return candidates;
 }
@@ -446,8 +450,16 @@ check_pfx_parity(uint32_t prefix, uint32_t rresp, uint8_t parities[8][8],
 }
 
 
+struct Crypto1State *lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]);
+
 /** lfsr_common_prefix
  * Implentation of the common prefix attack.
+ * Requires the 29 bit constant prefix used as reader nonce (pfx)
+ * The reader response used (rr)
+ * The keystream used to encrypt the observed NACK's (ks)
+ * The parity bits (par)
+ * It returns a zero terminated list of possible cipher states after the
+ * tag nonce was fed in
  */
 struct Crypto1State *
 lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]) {
@@ -459,9 +471,10 @@ lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]) 
 
   s = statelist = malloc((sizeof *statelist) << 20);
   if (!s || !odd || !even) {
+    free(odd);
+    free(even);
     free(statelist);
-    statelist = 0;
-    goto out;
+    return 0;
   }
 
   for (o = odd; *o + 1; ++o)
@@ -473,8 +486,9 @@ lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]) 
       }
 
   s->odd = s->even = 0;
-out:
+
   free(odd);
   free(even);
+
   return statelist;
 }
