@@ -1,4 +1,4 @@
-AC_INIT([mfcuk], [0.3.5], [zveriu@gmail.com])
+AC_INIT([mfcuk], [0.3.7], [zveriu@gmail.com])
 
 AC_CONFIG_MACRO_DIR([m4])
 
