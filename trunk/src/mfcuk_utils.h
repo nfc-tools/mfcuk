@@ -1,10 +1,10 @@
 /*
  Package:
     MiFare Classic Universal toolKit (MFCUK)
- 
+
  Package version:
     0.1
- 
+
  Filename:
     mfcuk_utils.h
 
@@ -15,7 +15,7 @@
     GPL2 (see below), Copyright (C) 2009, Andrei Costin
 
  * @file mfcuk_utils.h/
- * @brief 
+ * @brief
 */
 
 /*
@@ -35,14 +35,14 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 2 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef _MFCUK_UTILS_H_
@@ -53,28 +53,28 @@
 #include <string.h>
 
 #ifdef WIN32
-    #define NOMINMAX
-    #include "windows.h"
-    #include "xgetopt.h"
+#define NOMINMAX
+#include "windows.h"
+#include "xgetopt.h"
 #elif __STDC__
-    #include <unistd.h>
-    #include <sys/time.h>
-    #include <sys/types.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #endif
 
 // "Portable" sleep(miliseconds)
 #ifdef WIN32
-    #define sleep(x) Sleep(x)
+#define sleep(x) Sleep(x)
 #elif __STDC__
-    extern struct timeval global_timeout;
-    #define sleep(x) { global_timeout.tv_usec = 1000 * (x); select(0,NULL,NULL,NULL,&global_timeout); }
+extern struct timeval global_timeout;
+#define sleep(x) { global_timeout.tv_usec = 1000 * (x); select(0,NULL,NULL,NULL,&global_timeout); }
 #endif
 
 // "Portable" clear_screen() - NOTE: system performance penalty introduced
 #ifdef WIN32
-    #define clear_screen()  system("cls")
+#define clear_screen()  system("cls")
 #elif __STDC__
-    #define clear_screen()  system("sh -c clear")
+#define clear_screen()  system("sh -c clear")
 #endif
 
 /**

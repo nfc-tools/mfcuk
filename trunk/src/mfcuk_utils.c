@@ -1,10 +1,10 @@
 /*
  Package:
     MiFare Classic Universal toolKit (MFCUK)
- 
+
  Package version:
     0.1
- 
+
  Filename:
     mfcuk_utils.c
 
@@ -15,7 +15,7 @@
     GPL2 (see below), Copyright (C) 2009, Andrei Costin
 
  * @file mfcuk_utils.c
- * @brief 
+ * @brief
 */
 
 /*
@@ -35,20 +35,20 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 2 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mfcuk_utils.h"
 
 #ifdef __STDC__
-    struct timeval global_timeout;
+struct timeval global_timeout;
 #endif
 
 /*
@@ -65,17 +65,17 @@ The below code is just an optimization of the algorithm. Maxim Yegorushkin
 /*inline*/
 int is_hex(char c)
 {
-    return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
+  return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
 }
 
 /*inline*/
 unsigned char hex2bin(unsigned char h, unsigned char l)
 {
-    h |= 0x20; // to lower
-    h -= 0x30;
-    h -= -(h > 9) & 0x27;
-    l |= 0x20;
-    l -= 0x30;
-    l -= -(l > 9) & 0x27;
-    return h << 4 | l;
+  h |= 0x20; // to lower
+  h -= 0x30;
+  h -= -(h > 9) & 0x27;
+  l |= 0x20;
+  l -= 0x30;
+  l -= -(l > 9) & 0x27;
+  return h << 4 | l;
 }
