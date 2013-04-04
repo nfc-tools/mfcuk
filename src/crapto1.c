@@ -311,7 +311,6 @@ continue2:
 
 uint8_t lfsr_rollback_bit(struct Crypto1State *s, uint32_t in, int fb);
 uint8_t lfsr_rollback_byte(struct Crypto1State *s, uint32_t in, int fb);
-uint32_t lfsr_rollback_word(struct Crypto1State *s, uint32_t in, int fb);
 uint32_t *lfsr_prefix_ks(uint8_t ks[8], int isodd);
 
 /** lfsr_rollback_bit
@@ -449,8 +448,6 @@ check_pfx_parity(uint32_t prefix, uint32_t rresp, uint8_t parities[8][8],
   return sl + good;
 }
 
-
-struct Crypto1State *lfsr_common_prefix(uint32_t pfx, uint32_t rr, uint8_t ks[8], uint8_t par[8][8]);
 
 /** lfsr_common_prefix
  * Implentation of the common prefix attack.
