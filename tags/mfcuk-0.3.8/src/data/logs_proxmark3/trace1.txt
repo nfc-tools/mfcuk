@@ -1,0 +1,51 @@
+ + 561882:  1 :     26    
+ +     64:  2 : TAG 04  00    
+ +  10217:  2 :     93  20    
+ +     64:  5 : TAG 9c  59  9b  32  6c    
+ +  12313:  9 :     93  70  9c  59  9b  32  6c  6b  30    
+ +     64:  3 : TAG 08  b6  dd    
+ + 923318:  4 :     60  00  f5  7b    
+ +    112:  4 : TAG 82  a4  16  6c    
+ +   6985:  8 :     a1  e4! 58  ce! 6e  ea! 41  e0!       !crc
+ +     64:  4 : TAG 5c! ad  f4  39!   
+ + 811513:  4 :     8e  0e! 5d! b9        !crc
+ +    112:  4 : TAG 5a! 92  0d! 85!   
+ +   6946:  8 :     98! d7  6b! 77  d6  c6  e8  70        !crc
+ +     64:  4 : TAG ca  7e! 0b! 63!   
+ + 670868:  4 :     3e! 70  9c! 8a        !crc
+ +    112:  4 : TAG 36! 41  24! 79    
+ +   9505:  8 :     1b! 8c  3a! 48! 83  5a  4a! 27        !crc
+ +     64:  4 : TAG 40! 6a! 99! 4b    
+ + 905612:  4 :     c9  7c  64! 13!       !crc
+ +    112:  4 : TAG b5! ab! 1d! 2b    
+ +   6936:  8 :     7e! d2  5c! ca! 4b! 50! 88! c4        !crc
+ +     64:  4 : TAG bf  dd  01  be!   
+ + 987853:  4 :     56  98  49  d6!       !crc
+ +     72: 18 : TAG 09  bf! f5! f6! fc! b9! 5e! 51! 07  ac  f6  72  f8  73  3b! 1b  73! ad!       !crc
+ +  94864:  4 :     5c! 7b  24! 02        !crc
+ +     72: 18 : TAG a0  1f! 0b! b7  0d! ba  c9  e7! fa! 36! 47  d2  a0! 01! 40! 87  ff  95!       !crc
+ +  94827:  4 :     c9  90  dc! a3        !crc
+ +     72: 18 : TAG df  b8! 7a  bc! 17! 99  82! 5c  55  d5! 98! 68  8b  f8  e7  89  dc  42!       !crc
+ +  99081:  4 :     9f! d5  0f! d8!       !crc
+ +     72: 18 : TAG ca! 40  fa! 34  82  cc  3e  de  1f! 7f  f7! f0  62! 18! 77! 34  30  07        !crc
+ +  93995:  4 :     ad  7f! 3e  0c!       !crc
+ +     72: 18 : TAG f4! 2b  17! 4c  a2! 5a  0c! a0! d8  03! 05  cc  cc  4c  1f  12! 0c! 78!       !crc
+ +  94857:  4 :     f1! b4  f0  3b!       !crc
+ +     72: 18 : TAG 8f  da  ca  17! 42  8e  24  c9! 8e  fb! 38! aa! 39  e2! dd  dd! a8  a6        !crc
+ +  94850:  4 :     c4  03! 7b! 9a        !crc
+ +     72: 18 : TAG 9f! 42! 42  49! cd  d1! 3d! fd  8e  8f  d3  8d! d5! ca! ef! 15  84  c9!       !crc
+ +  93961:  4 :     33! 3b! ae  0a!       !crc
+ +     72: 18 : TAG 74  ed! 58  46! e7  cc  48  d1! 5a  4b  b0! 3a! c1  79! 8a! bf! e7! 42        !crc
+ +  93193:  4 :     f6  ec! 36  91!       !crc
+ +     72: 18 : TAG 79! 63  89! 21! 24  1e  3e! 03! a8! c3! 9b  95! a1  ad! 6c! 34  52  94        !crc
+ +  94866:  4 :     ad! 5c! 47  c5!       !crc
+ +     72: 18 : TAG 68  d4  9d  c2! 2b  18  46! f7  e8! 28  ea  03  a4  df  d5! 9f  23  00!       !crc
+ +  93994:  4 :     41  4c! 40! 11        !crc
+ +     72: 18 : TAG b1  95  17! 84! ac  fc! 31  b8! 02  40  97! ec! 4c  19  6f  e9  f0! 8c!       !crc
+ +  94818:  4 :     b8! b5! 5c! 74!       !crc
+ +     72: 18 : TAG c6  03  b9  92! 7d! eb! 13  8a  56  b7  9c  7c  07  3d! 6a  95! 7e! 44        !crc
+
+# http://www.proxmark.org/forum/post/550/#p550
+# UID = 0x9c599b32
+# KEY = 0xffffffffffff
+# 0x9c599b32 0x82a4166c 0xa1e458ce 0x6eea41e0 0x5cadf439
