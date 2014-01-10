@@ -214,9 +214,8 @@ static inline uint64_t bswap_64(uint64_t x)
 
 static uint32_t bswap_32_pu8(uint8_t *pu8)
 {
-  uint32_t u32;
-  memcpy(&u32, pu8, sizeof(uint32_t));
-  return u32;
+  // TODO: This function need to be tested on both endianness machine types
+  return pu8[0] << 24 | pu8[1] << 16 | pu8[2] << 8 | pu8[3];
 }
 
 extern mfcuk_finger_tmpl_entry mfcuk_finger_db[];
