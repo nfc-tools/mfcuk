@@ -45,11 +45,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mfcuk_utils.h"
+#include "config.h"
 
-#ifdef __STDC__
-struct timeval global_timeout;
+#if defined(WIN32)
+#include <windows.h>
+#elif defined(HAVE_UNISTD_H)
+#include <unistd.h>
+#else
+#error "Unsupported system"
 #endif
+
+#include "mfcuk_utils.h"
+#include <stdio.h>
 
 /*
 http://www.velocityreviews.com/forums/t451319-advice-required-on-my-ascii-to-hex-conversion-c.html
@@ -79,3 +86,22 @@ unsigned char hex2bin(unsigned char h, unsigned char l)
   l -= -(l > 9) & 0x27;
   return h << 4 | l;
 }
+
+void sleepmillis(unsigned int millis)
+{
+#ifdef WIN32 // If system is Windows, use system's own function if possible to reduce overhead, even if a standard C library is available
+  Sleep(millis);
+#else
+  usleep(millis * 1000);
+#endif
+}
+
+void clear_screen()
+{
+#ifdef WIN32 // On Windows, use "cls" command
+  system("cls");
+#else // Otherwise fall back to TTY control characters
+  printf("\033[1;1H\033[J");
+#endif
+}
+
