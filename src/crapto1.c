@@ -43,13 +43,19 @@ static void quicksort(uint32_t *const start, uint32_t *const stop)
       ++it;
     else if (*rit > *start)
       --rit;
-    else
-      *it ^= (*it ^= *rit, *rit ^= *it);
+    else {
+      uint32_t x = *it;
+      *it = *rit;
+      *rit = x;
+    }
 
   if (*rit >= *start)
     --rit;
-  if (rit != start)
-    *rit ^= (*rit ^= *start, *start ^= *rit);
+  if (rit != start) {
+    uint32_t x = *it;
+    *it = *rit;
+    *rit = x;
+  }
 
   quicksort(start, rit - 1);
   quicksort(rit + 1, stop);
@@ -322,7 +328,9 @@ uint8_t lfsr_rollback_bit(struct Crypto1State *s, uint32_t in, int fb)
   uint8_t ret;
 
   s->odd &= 0xffffff;
-  s->odd ^= (s->odd ^= s->even, s->even ^= s->odd);
+  uint32_t x = s->odd;
+  s->odd = s->even;
+  s->even = x;
 
   out = s->even & 1;
   out ^= LF_POLY_EVEN & (s->even >>= 1);
