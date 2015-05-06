@@ -48,35 +48,6 @@
 #ifndef _MFCUK_UTILS_H_
 #define _MFCUK_UTILS_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef WIN32
-#define NOMINMAX
-#include "windows.h"
-#include "xgetopt.h"
-#elif __STDC__
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#endif
-
-// "Portable" sleep(miliseconds)
-#ifdef WIN32
-#define sleep(x) Sleep(x)
-#elif __STDC__
-extern struct timeval global_timeout;
-#define sleep(x) { global_timeout.tv_usec = 1000 * (x); select(0,NULL,NULL,NULL,&global_timeout); }
-#endif
-
-// "Portable" clear_screen() - NOTE: system performance penalty introduced
-#ifdef WIN32
-#define clear_screen()  system("cls")
-#elif __STDC__
-#define clear_screen()  system("sh -c clear")
-#endif
-
 /**
  * @fn int is_hex(char c)
  * @brief Checks if an ASCII character is a valid hexadecimal base digit
@@ -101,4 +72,23 @@ int is_hex(char c);
  */
 unsigned char hex2bin(unsigned char h, unsigned char l);
 
+/**
+ * @fn void sleepmillis(unsigned int millis)
+ * @brief Pauses execution for a certain amount of milliseconds
+ * @param millis Number of milliseconds to sleep
+ *
+ * Wrapper for system-dependant sleep function. It pauses execution for a certain amount of milliseconds.
+ */
+void sleepmillis(unsigned int millis);
+
+/**
+ * @fn void clear_screen(void);
+ * @brief Clears output console
+ *
+ * Wrapper for system-dependant clear screen function.
+ * Resets output console, clearing text and resetting character pointer.
+ */
+void clear_screen(void);
+
 #endif // _MFCUK_UTILS_H_
+

@@ -174,15 +174,7 @@ static inline uint64_t bswap_64(uint64_t x)
 #include <err.h>
 #include <errno.h>
 
-#ifdef WIN32
-#define NOMINMAX
-#include "windows.h"
 #include "xgetopt.h"
-#elif __STDC__
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#endif
 
 // NFC
 #include <nfc/nfc.h>
@@ -497,7 +489,7 @@ static uint32_t mfcuk_key_recovery_block(nfc_device *pnd, uint32_t uiUID, uint64
     if (ptrFoundTagNonceEntry->current_out_of_8 >= MFCUK_DARKSIDE_MAX_LEVELS)
     {
         //printf("FAILURE - This Nt, {Pfx}, consecutive {Nr}s and {ParBits} combination cannot produce a key-recoverable state\n");
-        //printf("\tINFO: try changing initial {Nr}, {Ar} and timings of sleep()\n");
+        //printf("\tINFO: try changing initial {Nr}, {Ar} and timings of sleepmillis()\n");
 
         //printf("{Nr} is not a DEADBEEF.... Need to find BEEF ALIVE!... Trying next one...\n");
         ptrFoundTagNonceEntry->spoofNrEnc++;
@@ -516,7 +508,7 @@ static uint32_t mfcuk_key_recovery_block(nfc_device *pnd, uint32_t uiUID, uint64
         if (ptrFoundTagNonceEntry->parBitsCrntCombination[ptrFoundTagNonceEntry->current_out_of_8] >= 0x20)
         {
             //printf("FAILURE - This consecutive {Nr}s and {ParBits} combination cannot produce all 8 required NACKs and KSs of NACKs\n");
-            //printf("\tINFO: try changing initial {Nr}, {Ar} and timings of sleep()\n");
+            //printf("\tINFO: try changing initial {Nr}, {Ar} and timings of sleepmillis()\n");
 
             //printf("{Nr} is not a DEADBEEF.... Need to find BEEF ALIVE!... Trying next one...\n");
             ptrFoundTagNonceEntry->spoofNrEnc++;
@@ -838,7 +830,7 @@ static bool mfcuk_darkside_select_tag(nfc_device *pnd, int iSleepAtFieldOFF, int
   }
 
   // {WPMCC09} 2.4. Tag nonces: "drop the field (for approximately 30us) to discharge all capacitors"
-  sleep(iSleepAtFieldOFF);
+  sleepmillis(iSleepAtFieldOFF);
 
   // Let the reader only try once to find a tag
   if (0 > nfc_device_set_property_bool(pnd, NP_INFINITE_SELECT, false)) {
@@ -864,7 +856,7 @@ static bool mfcuk_darkside_select_tag(nfc_device *pnd, int iSleepAtFieldOFF, int
   }
 
   // Switch the field back on, and wait for a constant amount of time before authenticating
-  sleep(iSleepAfterFieldON);
+  sleepmillis(iSleepAfterFieldON);
 
   // Poll for a ISO14443A (MIFARE) tag
   if (0 >= nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &ti_tmp)) {

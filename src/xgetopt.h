@@ -15,9 +15,15 @@
 #ifndef XGETOPT_H
 #define XGETOPT_H
 
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#else
+
 extern int optind, opterr;
 extern char *optarg;
 
 int getopt(int argc, char *argv[], char *optstring);
+
+#endif
 
 #endif //XGETOPT_H
