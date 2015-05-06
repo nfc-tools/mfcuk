@@ -1,12 +1,10 @@
 AC_INIT([mfcuk], [0.3.8], [zveriu@gmail.com])
 
-AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE
 
 AC_PROG_CC
 
 AC_CONFIG_HEADERS([config.h])
-
-AM_INIT_AUTOMAKE
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
