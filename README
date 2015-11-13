@@ -52,3 +52,8 @@ KUDOS and HATS-OFF to (no specific order) (for all the knowledge, time spent res
  - Jonathan Westhues - for giving the open-source community the: Proxmark schematics/sources and RFID knowledge
  - Nethemba team - for first open-source/GPL nested authentication attack key recovery implementation in MFOC
  - hat, schwa226, pgrahamm, marcus2608, phadom - for useful samples, advices, traces and all the things
+
+# Docker #
+if you are haveing trouble getting mfcuk to run on your machine
+you can use this prebuild docker container  
+[RFID-forensics](https://hub.docker.com/r/note89/rfid-forensics/)
