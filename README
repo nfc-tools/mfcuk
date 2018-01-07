@@ -3,6 +3,7 @@ README
 
 Compiling:
     automake
+    autoreconf -i
     autoconf
     ./configure
     make
