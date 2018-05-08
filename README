@@ -2,8 +2,7 @@ README
 ======
 
 Compiling:
-    automake
-    autoconf
+    autoreconf -is
     ./configure
     make
 
