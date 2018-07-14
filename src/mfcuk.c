@@ -719,7 +719,7 @@ static void print_usage(FILE *fp, const char *prog_name)
   fprintf(fp, "\n");
 
   fprintf(fp, "Usage examples:\n");
-  fprintf(fp, "  Recove all keys from all sectors:\n");
+  fprintf(fp, "  Recover all keys from all sectors:\n");
   fprintf(fp, "    %s -C -R -1\n", prog_name);
 
   fprintf(fp, "  Recove the sector #0 key with 250 ms for all delays (delays could give more results): \n");
