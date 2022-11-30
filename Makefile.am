@@ -6,5 +6,5 @@ style:
 		--indent=spaces=2 --indent-switches --indent-preprocessor \
 		--keep-one-line-blocks --max-instatement-indent=60 \
 		--brackets=linux --pad-oper --unpad-paren --pad-header \
-		--align-pointer=name {} \;
+		--align-pointer=name {} \;s
 
