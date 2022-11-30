@@ -2,7 +2,7 @@ AC_INIT([mfcuk], [0.3.8], [zveriu@gmail.com])
 
 AM_INIT_AUTOMAKE
 
-AC_PROG_CC
+AC_PROG_CCa
 
 AC_CONFIG_HEADERS([config.h])
 
