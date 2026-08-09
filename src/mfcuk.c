@@ -171,7 +171,6 @@ static inline uint64_t bswap_64(uint64_t x)
 #endif
 
 #include <string.h>
-#include <err.h>
 #include <errno.h>
 
 #include "xgetopt.h"
